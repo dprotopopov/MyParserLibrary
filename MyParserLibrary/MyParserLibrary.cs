@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -23,17 +24,6 @@ namespace MyParserLibrary
             return hw.Load(url, method);
         }
 
-        /// <summary>
-        /// Не используется
-        /// </summary>        
-        public static string InvokeNodeProperty(HtmlNode node, string propertyName)
-        {
-            Type type = typeof(HtmlNode);
-            Debug.Assert(type != null, "type != null");
-            PropertyInfo propertyInfo = type.GetProperty(propertyName);
-            Debug.Assert(propertyInfo != null, "propertyInfo != null");
-            return (string)propertyInfo.GetValue(node, null);
-        }
 
         /// <summary>
         /// Замена в строке-шаблоне идентификаторов-параметров на их значения
@@ -75,10 +65,11 @@ namespace MyParserLibrary
                     foreach (var node in nodes)
                     {
                         Arguments arguments = new Arguments(parentArguments);
-                        arguments.InsertOrReplaceArguments(BuildArguments((HtmlNode)node));
+                        arguments.InsertOrReplaceArguments(
+                            BuildArguments(returnFieldInfo.ReturnFieldResultTemplate, node));
                         string value = rgxReplace.Replace(
                                 ParseTemplate(returnFieldInfo.ReturnFieldResultTemplate, arguments),
-                                        (string)returnFieldInfo.ReturnFieldRegexReplacement);
+                                        returnFieldInfo.ReturnFieldRegexReplacement);
 
                         list.AddRange(from Match match in rgxSelect.Matches(value) select match.Value);
                     }
@@ -92,6 +83,8 @@ namespace MyParserLibrary
             return returnFields;
         }
 
+        #region
+
         /// <summary>
         /// Формирование значений идентификаторов-параметров
         /// для замены в строке-шаблоне
@@ -99,9 +92,10 @@ namespace MyParserLibrary
         public static Arguments BuildArguments(long pageId)
         {
             Arguments arguments = new Arguments();
-            if (pageId > 1) arguments.Add(@"\{\{PageId\}\}", pageId.ToString());
+            if (pageId > 1) arguments.Add(@"\{\{PageId\}\}", pageId.ToString(CultureInfo.InvariantCulture));
             return arguments;
         }
+
         /// <summary>
         /// Формирование значений идентификаторов-параметров
         /// для замены в строке-шаблоне
@@ -111,24 +105,38 @@ namespace MyParserLibrary
             Arguments arguments = new Arguments { { @"\{\{Url\}\}", url }, { @"\{\{Method\}\}", method } };
             return arguments;
         }
+
         /// <summary>
         /// Формирование значений идентификаторов-параметров
         /// для замены в строке-шаблоне
         /// </summary>        
-        public static Arguments BuildArguments(HtmlNode node)
+        public static Arguments BuildArguments(string template, HtmlNode node)
         {
             Debug.Assert(node != null);
             try
             {
-                Arguments args = new Arguments
+                Arguments args = new Arguments();
+
+                Regex regex = new Regex(@"\{\{[^\}]+\}\}");
+                foreach (Match match in regex.Matches(template))
                 {
-                    {@"\{\{Id\}\}", node.Id},
-                    {@"\{\{InnerText\}\}", node.InnerText},
-                    {@"\{\{InnerHtml\}\}", node.InnerHtml},
-                    {@"\{\{HrefValue\}\}", AttributeValue(node,"href")},
-                    {@"\{\{SrcValue\}\}", AttributeValue(node,"src")},
-                    {@"\{\{Name\}\}", node.Name}
-                };
+                    string name = match.Value.Replace(@"{{", @"").Replace(@"}}", @"");
+                    try
+                    {
+                        args.Add(@"\{\{" + name + @"\}\}", InvokeNodeProperty(node, name));
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    try
+                    {
+                        args.Add(@"\{\{" + name + @"\}\}", AttributeValue(node, name));
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                
                 return args;
             }
             catch (Exception)
@@ -136,6 +144,11 @@ namespace MyParserLibrary
                 return new Arguments();
             }
         }
+
+        #endregion
+
+
+        #region 
 
         /// <summary>
         /// Получение значения указанного аттрибута указанного нода
@@ -152,5 +165,20 @@ namespace MyParserLibrary
                 return "";
             }
         }
+
+        /// <summary>
+        /// Получение значения указанного свойства указанного нода
+        /// </summary>        
+        public static string InvokeNodeProperty(HtmlNode node, string propertyName)
+        {
+            Type type = typeof (HtmlNode);
+            Debug.Assert(type != null, "type != null");
+            PropertyInfo propertyInfo = type.GetProperty(propertyName);
+            Debug.Assert(propertyInfo != null, "propertyInfo != null");
+            return (string) propertyInfo.GetValue(node, null);
+        }
+
+        #endregion
+
     }
 }

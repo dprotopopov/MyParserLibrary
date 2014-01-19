@@ -6,6 +6,9 @@ using HtmlAgilityPack;
 namespace MyParserLibrary
 {
     public delegate void WebTaskCallback(WebTask task);
+    /// <summary>
+    /// Задача загрузки страницы и разбора её на поля
+    /// </summary>
     public class WebTask
     {
         public enum WebTaskStatus
@@ -23,6 +26,8 @@ namespace MyParserLibrary
             return Url;
         }
 
+        #region Аттрибуты
+
         public int Id { get; set; }
         public int Level { get; set; }
         public string Url { get; set; }
@@ -30,35 +35,40 @@ namespace MyParserLibrary
         public ReturnFieldInfos ReturnFieldInfos { get; set; }
         public ReturnFields ReturnFields { get; set; }
         protected Thread Thread { get; set; }
-
         public WebTaskStatus Status { get; set; }
+
+        #endregion
+
+
+        #region Callback функции
+
         public WebTaskCallback OnStartCallback { get; set; }
         public WebTaskCallback OnAbortCallback { get; set; }
         public WebTaskCallback OnResumeCallback { get; set; }
         public WebTaskCallback OnCompliteCallback { get; set; }
         public WebTaskCallback OnErrorCallback { get; set; }
 
+        #endregion
+
+
         public static void ThreadProc(object obj)
         {
             WebTask This = obj as WebTask;
             Debug.Assert(This != null, "This != null");
-            if (This != null)
+            HtmlDocument doc = MyParserLibrary.WebRequestHtmlDocument(This.Url, This.Method);
+            try
             {
-                HtmlDocument doc = MyParserLibrary.WebRequestHtmlDocument(This.Url, This.Method);
-                try
-                {
-                    Arguments arguments = MyParserLibrary.BuildArguments(This.Url, This.Method);
-                    This.ReturnFields = MyParserLibrary.BuildReturnFields(doc.DocumentNode, arguments, This.ReturnFieldInfos);
-                    This.Status = WebTaskStatus.Finished;
-                    This.Thread = null;
-                    This.OnCompliteCallback(This);
-                }
-                catch (Exception)
-                {
-                    This.Status = WebTaskStatus.Error;
-                    This.Thread = null;
-                    This.OnErrorCallback(This);
-                }
+                Arguments arguments = MyParserLibrary.BuildArguments(This.Url, This.Method);
+                This.ReturnFields = MyParserLibrary.BuildReturnFields(doc.DocumentNode, arguments, This.ReturnFieldInfos);
+                This.Status = WebTaskStatus.Finished;
+                This.Thread = null;
+                This.OnCompliteCallback(This);
+            }
+            catch (Exception)
+            {
+                This.Status = WebTaskStatus.Error;
+                This.Thread = null;
+                This.OnErrorCallback(This);
             }
         }
 
@@ -68,6 +78,9 @@ namespace MyParserLibrary
             Level = level;
             Status = WebTaskStatus.Ready;
         }
+
+        #region Методы
+
         public void Start()
         {
             Thread = new Thread(ThreadProc);
@@ -89,6 +102,7 @@ namespace MyParserLibrary
                 OnAbortCallback(this);
             }
         }
+
         public void Resume()
         {
             if (Thread != null)
@@ -98,9 +112,13 @@ namespace MyParserLibrary
                 Thread.Resume();
             }
         }
+
         public void Join()
         {
             if (Thread != null) Thread.Join();
         }
+
+        #endregion
+
     }
 }

@@ -7,7 +7,7 @@ namespace MyParserLibrary
         {
             ReturnFieldId = "Url",
             ReturnFieldXpathTemplate = @"//a[@href]",
-            ReturnFieldResultTemplate = @"{{HrefValue}}",
+            ReturnFieldResultTemplate = @"{{href}}",
             ReturnFieldRegexPattern = @".*",
             ReturnFieldRegexReplacement = @"$&",
             ReturnFieldRegexSelect = @".+"
