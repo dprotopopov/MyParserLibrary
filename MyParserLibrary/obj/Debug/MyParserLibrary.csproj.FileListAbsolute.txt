@@ -1,0 +1,8 @@
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Debug\MyParserLibrary.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Debug\MyParserLibrary.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Debug\HtmlAgilityPack.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Debug\HtmlAgilityPack.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Debug\HtmlAgilityPack.xml
+D:\Projects\MyParserLibrary\MyParserLibrary\obj\Debug\MyParserLibrary.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\obj\Debug\MyParserLibrary.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary\obj\Debug\MyParserLibrary.csprojResolveAssemblyReference.cache

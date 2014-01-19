@@ -1,0 +1,7 @@
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\MyParserLibrary.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\MyParserLibrary.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\HtmlAgilityPack.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\HtmlAgilityPack.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\HtmlAgilityPack.xml
+D:\Projects\MyParserLibrary\MyParserLibrary\obj\Release\MyParserLibrary.dll
+D:\Projects\MyParserLibrary\MyParserLibrary\obj\Release\MyParserLibrary.pdb
