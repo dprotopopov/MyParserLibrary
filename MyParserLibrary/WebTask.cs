@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using HtmlAgilityPack;
+using System.Windows.Forms;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace MyParserLibrary
 {
-    public delegate void WebTaskCallback(WebTask task);
     /// <summary>
-    /// Задача загрузки страницы и разбора её на поля
+    ///     Задача загрузки страницы и разбора её на поля
     /// </summary>
-    public class WebTask
+    public class WebTask : IWebTask
     {
         public enum WebTaskStatus
         {
@@ -21,62 +21,12 @@ namespace MyParserLibrary
             Error = 5
         }
 
-        public override string ToString()
+        public WebTask()
         {
-            return Url;
-        }
-
-        #region Аттрибуты
-
-        public int Id { get; set; }
-        public int Level { get; set; }
-        public string Url { get; set; }
-        public string Method { get; set; }
-        public ReturnFieldInfos ReturnFieldInfos { get; set; }
-        public ReturnFields ReturnFields { get; set; }
-        protected Thread Thread { get; set; }
-        public WebTaskStatus Status { get; set; }
-
-        #endregion
-
-
-        #region Callback функции
-
-        public WebTaskCallback OnStartCallback { get; set; }
-        public WebTaskCallback OnAbortCallback { get; set; }
-        public WebTaskCallback OnResumeCallback { get; set; }
-        public WebTaskCallback OnCompliteCallback { get; set; }
-        public WebTaskCallback OnErrorCallback { get; set; }
-
-        #endregion
-
-
-        public static void ThreadProc(object obj)
-        {
-            WebTask This = obj as WebTask;
-            Debug.Assert(This != null, "This != null");
-            HtmlDocument doc = MyParserLibrary.WebRequestHtmlDocument(This.Url, This.Method);
-            try
-            {
-                Arguments arguments = MyParserLibrary.BuildArguments(This.Url, This.Method);
-                This.ReturnFields = MyParserLibrary.BuildReturnFields(doc.DocumentNode, arguments, This.ReturnFieldInfos);
-                This.Status = WebTaskStatus.Finished;
-                This.Thread = null;
-                This.OnCompliteCallback(This);
-            }
-            catch (Exception)
-            {
-                This.Status = WebTaskStatus.Error;
-                This.Thread = null;
-                This.OnErrorCallback(This);
-            }
-        }
-
-        public WebTask(int id, int level)
-        {
-            Id = id;
-            Level = level;
             Status = WebTaskStatus.Ready;
+            ReturnFieldInfos = new ReturnFieldInfos();
+            ParserLibrary = new MyParserLibrary();
+            Method = "GET";
         }
 
         #region Методы
@@ -87,7 +37,7 @@ namespace MyParserLibrary
             if (Thread != null)
             {
                 Status = WebTaskStatus.Running;
-                OnStartCallback(this);
+                if (OnStartCallback != null) OnStartCallback(this);
                 Thread.Start(this);
             }
         }
@@ -99,7 +49,7 @@ namespace MyParserLibrary
                 Thread.Abort();
                 Status = WebTaskStatus.Canceled;
                 Thread = null;
-                OnAbortCallback(this);
+                if (OnAbortCallback != null) OnAbortCallback(this);
             }
         }
 
@@ -108,7 +58,7 @@ namespace MyParserLibrary
             if (Thread != null)
             {
                 Status = WebTaskStatus.Running;
-                OnResumeCallback(this);
+                if (OnResumeCallback != null) OnResumeCallback(this);
                 Thread.Resume();
             }
         }
@@ -120,5 +70,67 @@ namespace MyParserLibrary
 
         #endregion
 
+        public override string ToString()
+        {
+            Arguments arguments = ParserLibrary.BuildArguments(this);
+            return ParserLibrary.ParseTemplate(Url, arguments);
+        }
+
+        public virtual void ThreadProc(object obj)
+        {
+            var This = obj as WebTask;
+            Debug.Assert(This != null, "This != null");
+            Arguments arguments = This.ParserLibrary.BuildArguments(This);
+            string url = This.ParserLibrary.ParseTemplate(This.Url, arguments);
+            HtmlDocument doc = This.ParserLibrary.WebRequestHtmlDocument(url, This.Method);
+            try
+            {
+                This.ReturnFields = This.ParserLibrary.BuildReturnFields(doc.DocumentNode, arguments,
+                    This.ReturnFieldInfos);
+                This.Status = WebTaskStatus.Finished;
+                This.Thread = null;
+                if (This.OnCompliteCallback != null) This.OnCompliteCallback(This);
+            }
+            catch (Exception)
+            {
+                This.Status = WebTaskStatus.Error;
+                This.Thread = null;
+                if (This.OnErrorCallback != null) This.OnErrorCallback(This);
+            }
+        }
+
+        public virtual ListViewItem ToListViewItem()
+        {
+            var viewItem = new ListViewItem(ToString().ToLower()) {ImageIndex = (int) Status};
+            viewItem.SubItems.Add(Convert.ToString(Level));
+            return viewItem;
+        }
+
+        #region Аттрибуты
+
+        public int Id { get; set; }
+        public int Level { get; set; }
+        public string Url { get; set; }
+        public string Method { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public ReturnFieldInfos ReturnFieldInfos { get; set; }
+        public ReturnFields ReturnFields { get; set; }
+        public Thread Thread { get; set; }
+        public WebTaskStatus Status { get; set; }
+
+        public MyParserLibrary ParserLibrary { get; set; }
+
+        #endregion
+
+        #region Callback функции
+
+        public WebTaskCallback OnStartCallback { get; set; }
+        public WebTaskCallback OnAbortCallback { get; set; }
+        public WebTaskCallback OnResumeCallback { get; set; }
+        public WebTaskCallback OnCompliteCallback { get; set; }
+        public WebTaskCallback OnErrorCallback { get; set; }
+
+        #endregion
     }
 }

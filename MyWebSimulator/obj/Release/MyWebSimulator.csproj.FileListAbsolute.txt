@@ -1,0 +1,17 @@
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\MyWebSimulator.exe.config
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\MyWebSimulator.exe
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\MyWebSimulator.pdb
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\HtmlAgilityPack.dll
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\MyParserLibrary.dll
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\MyParserLibrary.pdb
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\HtmlAgilityPack.pdb
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\HtmlAgilityPack.xml
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.csprojResolveAssemblyReference.cache
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.MyWebSimulatorForm.resources
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.Properties.Resources.resources
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.csproj.GenerateResource.Cache
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.exe.licenses
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.exe
+D:\Projects\MyIrrParser\MyWebSimulator\obj\Release\MyWebSimulator.pdb
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\WindowsInput.dll
+D:\Projects\MyIrrParser\MyWebSimulator\bin\Release\WindowsInput.xml

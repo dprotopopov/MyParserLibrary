@@ -1,0 +1,5 @@
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Debug\MyParserLibrary.UnitTest.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Debug\MyParserLibrary.UnitTest.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Debug\Jint.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\obj\Debug\MyParserLibrary.UnitTest.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\obj\Debug\MyParserLibrary.UnitTest.pdb

@@ -10,15 +10,15 @@ using HtmlAgilityPack;
 namespace MyParserLibrary
 {
     /// <summary>
-    /// Статический класс вспомогательных алгоритмов
+    /// Класс вспомогательных алгоритмов
     /// </summary>
-    internal static class MyParserLibrary
+    public class MyParserLibrary
     {
-
+        public object LastError { get; set; }
         /// <summary>
         /// Запрос к сайту с использованием HtmlWeb
         /// </summary>
-        public static HtmlDocument WebRequestHtmlDocument(string url, string method)
+        public HtmlDocument WebRequestHtmlDocument(string url, string method)
         {
             HtmlWeb hw = new HtmlWeb { AutoDetectEncoding = true };
             return hw.Load(url, method);
@@ -28,14 +28,12 @@ namespace MyParserLibrary
         /// <summary>
         /// Замена в строке-шаблоне идентификаторов-параметров на их значения
         /// </summary>        
-        public static string ParseTemplate(string template, Arguments args)
+        public string ParseTemplate(string template, Arguments args)
         {
             foreach (KeyValuePair<string, string> pair in args)
             {
                 Debug.Assert(pair.Key != null);
                 Debug.Assert(pair.Value != null);
-
-                //Debug.WriteLine("ParseTemplate: /" + pair.Key + "/ -> /" + pair.Value.Substring(0, Math.Min(30, pair.Value.Length)) + ((pair.Value.Length > 30) ? ".../" : "/"));
                 Regex regex = new Regex(pair.Key, RegexOptions.IgnoreCase);
                 template = regex.Replace(template, pair.Value);
             }
@@ -48,17 +46,17 @@ namespace MyParserLibrary
         /// <summary>
         /// Поиск и формирование значений возвращаемых полей загруженного с сайта объявления
         /// </summary>        
-        public static ReturnFields BuildReturnFields(
+        public ReturnFields BuildReturnFields(
             HtmlNode parentNode,
             Arguments parentArguments,
             ReturnFieldInfos returnFieldInfos)
         {
             ReturnFields returnFields = new ReturnFields();
-            foreach (var returnFieldInfo in returnFieldInfos)
+            foreach (var returnFieldInfo in returnFieldInfos.Values)
             {
                 Regex rgxReplace = new Regex(returnFieldInfo.ReturnFieldRegexPattern, RegexOptions.IgnoreCase | RegexOptions.Multiline);
                 Regex rgxSelect = new Regex(returnFieldInfo.ReturnFieldRegexSelect, RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                var nodes = parentNode.SelectNodes(ParseTemplate(returnFieldInfo.ReturnFieldXpathTemplate, parentArguments));
+                var nodes = parentNode.SelectNodes(ParseTemplate(returnFieldInfo.ReturnFieldXpath, parentArguments));
                 var list = new List<string>();
                 if (nodes != null)
                 {
@@ -66,9 +64,9 @@ namespace MyParserLibrary
                     {
                         Arguments arguments = new Arguments(parentArguments);
                         arguments.InsertOrReplaceArguments(
-                            BuildArguments(returnFieldInfo.ReturnFieldResultTemplate, node));
+                            BuildArguments(returnFieldInfo.ReturnFieldResult, node));
                         string value = rgxReplace.Replace(
-                                ParseTemplate(returnFieldInfo.ReturnFieldResultTemplate, arguments),
+                                ParseTemplate(returnFieldInfo.ReturnFieldResult, arguments),
                                         returnFieldInfo.ReturnFieldRegexReplacement);
 
                         list.AddRange(from Match match in rgxSelect.Matches(value) select match.Value);
@@ -86,10 +84,12 @@ namespace MyParserLibrary
         #region
 
         /// <summary>
-        /// Формирование значений идентификаторов-параметров
+        /// Формирование пар идентификатор параметра <-> значение параметра
         /// для замены в строке-шаблоне
-        /// </summary>        
-        public static Arguments BuildArguments(long pageId)
+        /// </summary>
+        /// <param name="pageId"></param>
+        /// <returns></returns>
+        public Arguments BuildArguments(long pageId)
         {
             Arguments arguments = new Arguments();
             if (pageId > 1) arguments.Add(@"\{\{PageId\}\}", pageId.ToString(CultureInfo.InvariantCulture));
@@ -97,85 +97,100 @@ namespace MyParserLibrary
         }
 
         /// <summary>
-        /// Формирование значений идентификаторов-параметров
+        /// Формирование пар идентификатор параметра <-> значение параметра
         /// для замены в строке-шаблоне
-        /// </summary>        
-        public static Arguments BuildArguments(string url, string method)
+        /// </summary>
+        /// <param name="task"></param>
+        /// <returns></returns>
+        public Arguments BuildArguments(WebTask task)
         {
-            Arguments arguments = new Arguments { { @"\{\{Url\}\}", url }, { @"\{\{Method\}\}", method } };
+            Arguments arguments = new Arguments();
+            foreach (var prop in task.GetType().GetProperties())
+            {
+                try
+                {
+                    string propName = @"\{\{" + prop.Name + @"\}\}";
+                    if (!arguments.ContainsKey(propName))
+                    {
+                        string value = prop.GetValue(task, null).ToString();
+                        Debug.WriteLine(propName + " -> " + value);
+                        arguments.Add(propName, value);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    LastError = exception;
+                }
+            }
             return arguments;
         }
 
         /// <summary>
-        /// Формирование значений идентификаторов-параметров
+        /// Формирование пар идентификатор параметра <-> значение параметра
         /// для замены в строке-шаблоне
-        /// </summary>        
-        public static Arguments BuildArguments(string template, HtmlNode node)
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public Arguments BuildArguments(string template, HtmlNode node)
         {
             Debug.Assert(node != null);
-            try
-            {
-                Arguments args = new Arguments();
+            Arguments args = new Arguments();
 
-                Regex regex = new Regex(@"\{\{[^\}]+\}\}");
-                foreach (Match match in regex.Matches(template))
-                {
-                    string name = match.Value.Replace(@"{{", @"").Replace(@"}}", @"");
-                    try
-                    {
-                        args.Add(@"\{\{" + name + @"\}\}", InvokeNodeProperty(node, name));
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    try
-                    {
-                        args.Add(@"\{\{" + name + @"\}\}", AttributeValue(node, name));
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-                
-                return args;
-            }
-            catch (Exception)
+            Regex regex = new Regex(@"\{\{[^\}]+\}\}");
+            foreach (string name in from Match match in regex.Matches(template) select match.Value.Replace(@"{{", @"").Replace(@"}}", @""))
             {
-                return new Arguments();
+                Debug.WriteLine(template + " <- " + name);
+                try
+                {
+                    args.Add(@"\{\{" + name + @"\}\}", InvokeNodeProperty(node, name));
+                }
+                catch (Exception exception)
+                {
+                    LastError = exception;
+                }
+                try
+                {
+                    args.Add(@"\{\{" + name + @"\}\}", AttributeValue(node, name));
+                }
+                catch (Exception exception)
+                {
+                    LastError = exception;
+                }
             }
+
+            return args;
         }
 
         #endregion
 
 
-        #region 
+        #region Получение значения параметра
 
         /// <summary>
         /// Получение значения указанного аттрибута указанного нода
-        /// </summary>        
-        public static string AttributeValue(HtmlNode node, string attributeName)
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="attributeName"></param>
+        /// <returns></returns>
+        private static string AttributeValue(HtmlNode node, string attributeName)
         {
-            try
-            {
-                HtmlAttribute attribute = node.Attributes[attributeName];
-                return attribute.Value;
-            }
-            catch (Exception)
-            {
-                return "";
-            }
+            HtmlAttribute attribute = node.Attributes[attributeName];
+            return attribute.Value;
         }
 
         /// <summary>
         /// Получение значения указанного свойства указанного нода
-        /// </summary>        
-        public static string InvokeNodeProperty(HtmlNode node, string propertyName)
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        private static string InvokeNodeProperty(HtmlNode node, string propertyName)
         {
-            Type type = typeof (HtmlNode);
+            Type type = typeof(HtmlNode);
             Debug.Assert(type != null, "type != null");
             PropertyInfo propertyInfo = type.GetProperty(propertyName);
-            Debug.Assert(propertyInfo != null, "propertyInfo != null");
-            return (string) propertyInfo.GetValue(node, null);
+            return (string)propertyInfo.GetValue(node, null);
         }
 
         #endregion

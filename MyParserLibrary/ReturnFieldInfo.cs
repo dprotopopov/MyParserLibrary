@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
+using System.Windows.Forms;
 
 namespace MyParserLibrary
 {
@@ -14,9 +16,24 @@ namespace MyParserLibrary
         /// <returns></returns>
         public override string ToString()
         {
-            return ReturnFieldId;
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in this)
+            {
+                sb.AppendFormat("%s\t: %s\n", item.Key, item.Value);
+            }
+            return sb.ToString();
         }
 
+        public ListViewItem ToListViewItem()
+        {
+            ListViewItem viewItem = new ListViewItem(ReturnFieldId);
+            viewItem.SubItems.Add(ReturnFieldXpath);
+            viewItem.SubItems.Add(ReturnFieldResult);
+            viewItem.SubItems.Add(ReturnFieldRegexPattern);
+            viewItem.SubItems.Add(ReturnFieldRegexReplacement);
+            viewItem.SubItems.Add(ReturnFieldRegexSelect);
+            return viewItem;
+        }
         /// <summary>
         /// Идентификатор возвращаемого поля
         /// </summary>
@@ -40,7 +57,7 @@ namespace MyParserLibrary
         /// <summary>
         /// Xpath для нахождения поля на загруженной странице
         /// </summary>
-        public string ReturnFieldXpathTemplate
+        public string ReturnFieldXpath
         {
             get
             {
@@ -60,7 +77,7 @@ namespace MyParserLibrary
         /// <summary>
         /// Шаблон возвращаемого найденого текста 
         /// </summary>
-        public string ReturnFieldResultTemplate
+        public string ReturnFieldResult
         {
             get
             {

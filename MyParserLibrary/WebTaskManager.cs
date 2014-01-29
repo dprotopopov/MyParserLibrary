@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace MyParserLibrary
 {
@@ -13,7 +15,8 @@ namespace MyParserLibrary
         readonly Dictionary<string, int> _webTasksIndex = new Dictionary<string, int>();
 
         public List<WebTask> Tasks { get { return _webTasks; } }
-        #region 
+
+        #region
 
         /// <summary>
         /// Максимальное число одновременно работающих потоков
@@ -27,6 +30,21 @@ namespace MyParserLibrary
 
         #endregion
 
+        public ListView ListView { get; set; }
+
+        public void OnWebTaskDefault(WebTask task)
+        {
+            Debug.Assert(ListView != null);
+            try
+            {
+                ListView.ListViewItemCollection items = ListView.Items;
+                var lvi = items[task.Id];
+                if (lvi != null) lvi.ImageIndex = (int)task.Status;
+            }
+            catch (Exception)
+            {
+            }
+        }
         private int TotalRunning
         {
             get
@@ -39,78 +57,55 @@ namespace MyParserLibrary
 
         public void StartAllTasks()
         {
-            int toStart = MaxThreads - TotalRunning;
-            foreach (
-                var task in
-                    Tasks.Where(task => task.Status == WebTask.WebTaskStatus.Ready).Where(task => toStart-- > 0))
-                task.Start();
+            int count = MaxThreads - TotalRunning;
+            foreach (var task in Tasks)
+            {
+                if (task.Status == WebTask.WebTaskStatus.Ready)
+                {
+                    if (count-- > 0) task.Start();
+                }
+            }
         }
 
         public void ResumeAllTasks()
         {
-            int toStart = MaxThreads - TotalRunning;
-            foreach (
-                var task in
-                    Tasks.Where(task => task.Status == WebTask.WebTaskStatus.Paused).Where(task => toStart-- > 0))
-                task.Resume();
+            int count = MaxThreads - TotalRunning;
+            foreach (var task in Tasks)
+            {
+                if (task.Status == WebTask.WebTaskStatus.Paused)
+                {
+                    if (count-- > 0) task.Resume();
+                }
+            }
         }
 
         public void AbortAllTasks()
         {
-            foreach (
-                var task in
-                    Tasks.Where(
-                        task =>
-                            task.Status == WebTask.WebTaskStatus.Running || task.Status == WebTask.WebTaskStatus.Paused)
-                )
-                task.Abort();
+            foreach (var task in Tasks)
+            {
+                if (task.Status == WebTask.WebTaskStatus.Running || task.Status == WebTask.WebTaskStatus.Paused) task.Abort();
+            }
         }
 
         #endregion
 
         private readonly Object _thisLock = new Object();
-        /// <summary>
-        /// Добавление новой задачи в очередь
-        /// 
-        /// Пример использования:
-        ///try
-        ///{
-        ///    WebTask newTask = WebTaskManager.AddTask(uri, "GET", task.Level + 1);
-        ///    newTask.OnStartCallback = OnWebTaskDefault;
-        ///    newTask.OnAbortCallback = OnWebTaskDefault;
-        ///    newTask.OnResumeCallback = OnWebTaskDefault;
-        ///    newTask.OnErrorCallback = OnWebTaskDefault;
-        ///    newTask.OnCompliteCallback = OnWebTaskComplite;
-        ///    newTask.ReturnFieldInfos = ReturnFieldInfos;
-        ///    ListViewItem viewItem = new ListViewItem(newTask.ToString())
-        ///    {
-        ///        ImageIndex = 0,
-        ///        Name = newTask.ToString().ToLower()
-        ///    };
-        ///    viewItem.SubItems.Add(Convert.ToString(newTask.Level));
-        ///    listView2.Items.Add(viewItem);
-        ///}
-        ///catch (Exception)
-        ///{
-        ///}
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <param name="method"></param>
-        /// <param name="level"></param>
+
+        ///  <summary>
+        ///  Добавление новой задачи в очередь
+        ///  </summary>
         /// <returns></returns>
-        public WebTask AddTask(Uri uri, string method, int level)
+        public WebTask AddTask(WebTask newTask)
         {
             lock (_thisLock)
             {
-                var newTask = new WebTask(Tasks.Count, level)
-                {
-                    Url = uri.AbsoluteUri,
-                    Method = method,
-                };
+                newTask.Id = Tasks.Count;
                 if (newTask.Level < MaxLevel && !_webTasksIndex.ContainsKey(newTask.ToString().ToLower()))
                 {
                     Tasks.Add(newTask);
                     _webTasksIndex.Add(newTask.ToString().ToLower(), newTask.Id);
+                    ListViewItem viewItem = newTask.ToListViewItem();
+                    if (ListView != null) ListView.Items.Add(viewItem);
                     return newTask;
                 }
                 throw new Exception();

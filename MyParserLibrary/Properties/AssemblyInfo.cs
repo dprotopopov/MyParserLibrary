@@ -6,11 +6,11 @@ using System.Resources;
 // Управление общими сведениями о сборке осуществляется с помощью 
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
-[assembly: AssemblyTitle("MyParserLibrary")]
+[assembly: AssemblyTitle("ParserLibrary")]
 [assembly: AssemblyDescription("Библиотека загрузки и синтаксического разбора html страниц на поля")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ЭРБИЭЙ-ДИЗАЙН ООО")]
-[assembly: AssemblyProduct("MyParserLibrary")]
+[assembly: AssemblyProduct("ParserLibrary")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
