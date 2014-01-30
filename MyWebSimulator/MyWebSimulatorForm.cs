@@ -92,33 +92,55 @@ namespace MyWebSimulator
             if (level <= 1)
             {
                 HtmlDocument document = WebSimulator.HtmlDocument;
-                foreach (var index in from HtmlNode node in document.DocumentNode.SelectNodes(@"//*")
-                    select new KeyValuePair<string, HtmlNode>(node.OuterHtml, node))
+                foreach (HtmlNode node in document.DocumentNode.SelectNodes(@"//*"))
                 {
-                    listBoxNodes.Items.Add(index);
+                    try
+                    {
+                        listBoxNodes.Items.Add(new KeyValuePair<string, HtmlNode>(node.OuterHtml, node));
+                    }
+                    catch (Exception exception)
+                    {
+                        Workspace.LastError = exception;
+                    }
                 }
-                foreach (var index in from WebElement element in WebSimulator.WebDocument.All
-                    select new KeyValuePair<string, WebElement>(element.OuterHtml, element))
+                foreach (IWebElement element in WebSimulator.WebDocument.All)
                 {
-                    listBoxElements.Items.Add(index);
+                    try
+                    {
+                        listBoxElements.Items.Add(new KeyValuePair<string, IWebElement>(element.OuterHtml, element));
+                    }
+                    catch (Exception exception)
+                    {
+                        Workspace.LastError = exception;
+                    }
                 }
             }
             if (level == 2)
             {
                 HtmlDocument document = WebSimulator.HtmlDocument;
                 List<HtmlNode> nodeList = document.DocumentNode.SelectNodes(Workspace.Xpath).ToList();
-                List<WebElement> elementList = WebSimulator.GetElementByNode(nodeList);
-                foreach (var itemNode in nodeList.Select(node => new KeyValuePair<string, HtmlNode>(node.OuterHtml,
-                    node)))
+                List<IWebElement> elementList = WebSimulator.GetElementByNode(nodeList);
+                foreach (HtmlNode node in nodeList)
                 {
-                    listBoxNodes.Items.Add(itemNode);
+                    try
+                    {
+                        listBoxNodes.Items.Add(new KeyValuePair<string, HtmlNode>(node.OuterHtml, node));
+                    }
+                    catch (Exception exception)
+                    {
+                        Workspace.LastError = exception;
+                    }
                 }
-                foreach (
-                    var itemElement in
-                        elementList.Select(element => new KeyValuePair<string, WebElement>(element.OuterHtml, element))
-                    )
+                foreach (IWebElement element in elementList)
                 {
-                    listBoxElements.Items.Add(itemElement);
+                    try
+                    {
+                        listBoxElements.Items.Add(new KeyValuePair<string, IWebElement>(element.OuterHtml, element));
+                    }
+                    catch (Exception exception)
+                    {
+                        Workspace.LastError = exception;
+                    }
                 }
             }
         }
@@ -131,7 +153,11 @@ namespace MyWebSimulator
 
                 ClearControls(0);
                 WebSimulator.Window = WebSimulator.TopmostWindow;
-                propertyGridControlWindow.SelectedObject = WebSimulator.TopmostWindow.ManagedObject;
+                if (WebSimulator.TopmostWindow is IObjectManager)
+                    propertyGridControlWindow.SelectedObject =
+                        (WebSimulator.TopmostWindow as IObjectManager).ManagedObject;
+                else
+                    propertyGridControlWindow.SelectedObject = WebSimulator.TopmostWindow;
                 FillControls(0);
 
                 Workspace.LastError = WebSimulator.LastError;
@@ -154,17 +180,21 @@ namespace MyWebSimulator
                     var itemNode = (KeyValuePair<string, HtmlNode>) listBoxNodes.SelectedItem;
                     propertyGridControlHtmlNode.SelectedObject = itemNode.Value;
                     Workspace.Xpath = WebSimulator.XPathSanitize(itemNode.Value.XPath);
-                    WebElement element =
+                    IWebElement element =
                         WebSimulator.GetElementByNode(new List<HtmlNode>
                         {
                             itemNode.Value
                         })
                             .FirstOrDefault();
-                    KeyValuePair<string, WebElement> itemElement = listBoxElements.Items
-                        .Cast<KeyValuePair<string, WebElement>>()
+                    KeyValuePair<string, IWebElement> itemElement = listBoxElements.Items
+                        .Cast<KeyValuePair<string, IWebElement>>()
                         .FirstOrDefault(index => index.Value.Equals(element));
                     listBoxElements.SelectedItem = itemElement;
-                    propertyGridControlHtmlElement.SelectedObject = itemElement.Value.ManagedObject;
+                    if (itemElement.Value is IObjectManager)
+                        propertyGridControlHtmlElement.SelectedObject =
+                            (itemElement.Value as IObjectManager).ManagedObject;
+                    else
+                        propertyGridControlHtmlElement.SelectedObject = itemElement.Value;
                 }
 
                 Workspace.LastError = WebSimulator.LastError;
@@ -184,8 +214,12 @@ namespace MyWebSimulator
                 FillControls(4);
                 if (listBoxElements.SelectedItem != null)
                 {
-                    var itemElement = ((KeyValuePair<string, WebElement>) listBoxElements.SelectedItem);
-                    propertyGridControlHtmlElement.SelectedObject = itemElement.Value.ManagedObject;
+                    var itemElement = ((KeyValuePair<string, IWebElement>) listBoxElements.SelectedItem);
+                    if (itemElement.Value is IObjectManager)
+                        propertyGridControlHtmlElement.SelectedObject =
+                            (itemElement.Value as IObjectManager).ManagedObject;
+                    else
+                        propertyGridControlHtmlElement.SelectedObject = itemElement.Value;
                     WebSimulator.HighlightElement(WebSimulator.HighlightedElement = itemElement.Value, true, true);
                     Workspace.Xpath = itemElement.Value.XPath;
                 }
@@ -233,11 +267,11 @@ namespace MyWebSimulator
             try
             {
                 EventInfo eventInfo = Workspace.ElementEventInfo;
-                WebElement htmlElement = ((KeyValuePair<string, WebElement>) listBoxElements.SelectedItem).Value;
+                IWebElement htmlElement = ((KeyValuePair<string, IWebElement>) listBoxElements.SelectedItem).Value;
                 List<object> parameters;
-                if (eventInfo == typeof (WebElement).GetEvent("KeyDown") ||
-                    eventInfo == typeof (WebElement).GetEvent("KeyPress") ||
-                    eventInfo == typeof (WebElement).GetEvent("KeyUp"))
+                if (eventInfo == typeof (HtmlElement).GetEvent("KeyDown") ||
+                    eventInfo == typeof (HtmlElement).GetEvent("KeyPress") ||
+                    eventInfo == typeof (HtmlElement).GetEvent("KeyUp"))
                     parameters = new List<object> {Workspace.VirtualKeyCode};
                 else parameters = new List<object>();
                 WebSimulator.SimulateEvent(eventInfo, htmlElement, parameters);
@@ -254,7 +288,7 @@ namespace MyWebSimulator
         {
             try
             {
-                WebElement htmlElement = ((KeyValuePair<string, WebElement>) listBoxElements.SelectedItem).Value;
+                IWebElement htmlElement = ((KeyValuePair<string, IWebElement>) listBoxElements.SelectedItem).Value;
                 var parameters = new List<object> {Workspace.TextEntry};
                 WebSimulator.SimulateTextEntry(htmlElement, parameters);
                 Workspace.LastError = WebSimulator.LastError;
@@ -274,9 +308,12 @@ namespace MyWebSimulator
 
                 if (listBoxWindows.SelectedItem != null)
                 {
-                    var itemWindow = (KeyValuePair<WebWindow, string>) listBoxWindows.SelectedItem;
+                    var itemWindow = (KeyValuePair<IWebWindow, string>) listBoxWindows.SelectedItem;
                     WebSimulator.Window = itemWindow.Key;
-                    propertyGridControlWindow.SelectedObject = itemWindow.Key.ManagedObject;
+                    if (itemWindow.Key is IObjectManager)
+                        propertyGridControlWindow.SelectedObject = (itemWindow.Key as IObjectManager).ManagedObject;
+                    else
+                        propertyGridControlWindow.SelectedObject = itemWindow.Key;
                     FillControls(1);
                 }
                 Workspace.LastError = WebSimulator.LastError;
@@ -299,7 +336,7 @@ namespace MyWebSimulator
             public object LastError { get; set; }
             public VirtualKeyCode VirtualKeyCode { get; set; }
             public string TextEntry { get; set; }
-            public WebWindow Window { get; set; }
+            public IWebWindow Window { get; set; }
         }
     }
 }

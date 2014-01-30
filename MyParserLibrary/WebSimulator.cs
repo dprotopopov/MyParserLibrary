@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -32,25 +31,25 @@ namespace MyParserLibrary
             JintEngine.SetFunction("alert", new Action<object>(s => Debug.WriteLine(s)));
         }
 
-        public WebWindow TopmostWindow
+        public IWebWindow TopmostWindow
         {
             get { return WebBrowser.Document.Window; }
         }
 
-        public WebWindow Window { get; set; }
+        public IWebWindow Window { get; set; }
 
-        public Dictionary<WebWindow, string> Windows(WebWindow window)
+        public Dictionary<IWebWindow, string> Windows(IWebWindow window)
         {
             Debug.Assert(!window.IsNullOrEmpty());
 
-            var dictionary = new Dictionary<WebWindow, string>();
-            var stack = new Stack<KeyValuePair<WebWindow, string>>();
-            stack.Push(new KeyValuePair<WebWindow, string>(window, ""));
+            var dictionary = new Dictionary<IWebWindow, string>();
+            var stack = new Stack<KeyValuePair<IWebWindow, string>>();
+            stack.Push(new KeyValuePair<IWebWindow, string>(window, ""));
             while (stack.Any())
             {
                 try
                 {
-                    KeyValuePair<WebWindow, string> item = stack.Pop();
+                    KeyValuePair<IWebWindow, string> item = stack.Pop();
                     string xpath = item.Value;
                     if (!item.Key.WindowFrameElement.IsNullOrEmpty())
                     {
@@ -58,9 +57,9 @@ namespace MyParserLibrary
                     }
                     dictionary.Add(item.Key, xpath);
                     if (item.Key.Frames != null)
-                        foreach (WebWindow child in item.Key.Frames.Reverse())
+                        foreach (IWebWindow child in item.Key.Frames.Reverse())
                         {
-                            stack.Push(new KeyValuePair<WebWindow, string>(child, xpath));
+                            stack.Push(new KeyValuePair<IWebWindow, string>(child, xpath));
                         }
                 }
                 catch (Exception exception)
@@ -71,7 +70,7 @@ namespace MyParserLibrary
             return dictionary;
         }
 
-        public WebDocument WebDocument
+        public IWebDocument WebDocument
         {
             get { return Window.Document; }
         }
@@ -96,8 +95,8 @@ namespace MyParserLibrary
             get
             {
                 var document = new HtmlDocument();
-                if (WebDocument.Body != null)
-                    if (WebDocument.Body.Parent != null)
+                if (!WebDocument.Body.IsNullOrEmpty())
+                    if (!WebDocument.Body.Parent.IsNullOrEmpty())
                         document.LoadHtml(WebDocument.Body.Parent.OuterHtml);
                 return document;
             }
@@ -143,7 +142,7 @@ namespace MyParserLibrary
         }
 
         public int DocumentCompleted { get; set; }
-        public WebElement HighlightedElement { get; set; }
+        public IWebElement HighlightedElement { get; set; }
 
         /// <summary>
         ///     Возвращает строку, которая представляет текущий объект.
@@ -262,13 +261,13 @@ namespace MyParserLibrary
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        public List<WebElement> GetElementByNode(List<HtmlNode> nodes)
+        public List<IWebElement> GetElementByNode(List<HtmlNode> nodes)
         {
-            var elements = new List<WebElement>();
+            var elements = new List<IWebElement>();
 
             var dictionaryNode = new Dictionary<HtmlNode, string>();
-            var dictionaryElement = new Dictionary<WebElement, string>();
-            foreach (WebElement item in WebDocument.All)
+            var dictionaryElement = new Dictionary<IWebElement, string>();
+            foreach (IWebElement item in WebDocument.All)
             {
                 string xpath = XPathSanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
@@ -291,13 +290,13 @@ namespace MyParserLibrary
             return elements;
         }
 
-        public List<HtmlNode> GetNodeByElement(List<WebElement> elements)
+        public List<HtmlNode> GetNodeByElement(List<IWebElement> elements)
         {
             var nodes = new List<HtmlNode>();
 
             var dictionaryNode = new Dictionary<HtmlNode, string>();
-            var dictionaryElement = new Dictionary<WebElement, string>();
-            foreach (WebElement item in elements)
+            var dictionaryElement = new Dictionary<IWebElement, string>();
+            foreach (IWebElement item in elements)
             {
                 string xpath = XPathSanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
@@ -320,7 +319,7 @@ namespace MyParserLibrary
             return nodes;
         }
 
-        public void HighlightElement(WebElement webElement, bool highlight, bool scrollToElement)
+        public void HighlightElement(IWebElement webElement, bool highlight, bool scrollToElement)
         {
             if (scrollToElement) ScrollToElement(webElement);
 
@@ -362,7 +361,7 @@ namespace MyParserLibrary
             }
         }
 
-        public object SimulateTextEntry(WebElement webElement, List<object> parameters)
+        public object SimulateTextEntry(IWebElement webElement, List<object> parameters)
         {
             MethodInfo methodInfo = GetType().GetMethod("TextEntry", new[] {typeof (WebElement), typeof (string)});
             var objects = new List<object> {webElement};
@@ -373,27 +372,27 @@ namespace MyParserLibrary
             return methodInfo.Invoke(this, objects.ToArray());
         }
 
-        public object SimulateEvent(EventInfo eventInfo, WebElement webElement, List<object> parameters)
+        public object SimulateEvent(EventInfo eventInfo, IWebElement webElement, List<object> parameters)
         {
             var dictionary = new Dictionary<EventInfo, MethodInfo>
             {
-                {typeof (HtmlElement).GetEvent("GotFocus"), GetType().GetMethod("Focus", new[] {typeof (WebElement)})},
-                {typeof (HtmlElement).GetEvent("Click"), GetType().GetMethod("Click", new[] {typeof (WebElement)})},
+                {typeof (HtmlElement).GetEvent("GotFocus"), GetType().GetMethod("Focus", new[] {typeof (IWebElement)})},
+                {typeof (HtmlElement).GetEvent("Click"), GetType().GetMethod("Click", new[] {typeof (IWebElement)})},
                 {
                     typeof (HtmlElement).GetEvent("DoubleClick"),
-                    GetType().GetMethod("DoubleClick", new[] {typeof (WebElement)})
+                    GetType().GetMethod("DoubleClick", new[] {typeof (IWebElement)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyDown"),
-                    GetType().GetMethod("KeyDown", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyDown", new[] {typeof (IWebElement), typeof (VirtualKeyCode)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyPress"),
-                    GetType().GetMethod("KeyPress", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyPress", new[] {typeof (IWebElement), typeof (VirtualKeyCode)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyUp"),
-                    GetType().GetMethod("KeyUp", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyUp", new[] {typeof (IWebElement), typeof (VirtualKeyCode)})
                 },
             };
             if (dictionary.ContainsKey(eventInfo))
@@ -409,7 +408,7 @@ namespace MyParserLibrary
             throw new NotImplementedException();
         }
 
-        public void ScrollToElement(WebElement webElement)
+        public void ScrollToElement(IWebElement webElement)
         {
             try
             {
@@ -452,14 +451,14 @@ namespace MyParserLibrary
 
         #region
 
-        public void Focus(WebElement webElement)
+        public void Focus(IWebElement webElement)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             webElement.Focus();
         }
 
-        public void Click(WebElement webElement)
+        public void Click(IWebElement webElement)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -467,7 +466,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
         }
 
-        public void DoubleClick(WebElement webElement)
+        public void DoubleClick(IWebElement webElement)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -476,7 +475,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
         }
 
-        public void KeyDown(WebElement webElement, VirtualKeyCode code)
+        public void KeyDown(IWebElement webElement, VirtualKeyCode code)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -484,7 +483,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.KeyDown(code);
         }
 
-        public void KeyPress(WebElement webElement, VirtualKeyCode code)
+        public void KeyPress(IWebElement webElement, VirtualKeyCode code)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -492,7 +491,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.KeyPress(code);
         }
 
-        public void KeyUp(WebElement webElement, VirtualKeyCode code)
+        public void KeyUp(IWebElement webElement, VirtualKeyCode code)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -500,7 +499,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.KeyUp(code);
         }
 
-        public void TextEntry(WebElement webElement, string text)
+        public void TextEntry(IWebElement webElement, string text)
         {
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
@@ -508,7 +507,7 @@ namespace MyParserLibrary
             InputSimulator.Keyboard.TextEntry(text);
         }
 
-        public WebElement Select(WebElement webElement)
+        public IWebElement Select(IWebElement webElement)
         {
             return webElement;
         }
@@ -599,18 +598,6 @@ namespace MyParserLibrary
 
         #endregion
 
-        public static Rectangle GetElementRectangle(WebElement htmlElement)
-        {
-            var rect = new Rectangle(0, 0, htmlElement.OffsetRectangle.Width, htmlElement.OffsetRectangle.Height);
-            for (WebElement current = htmlElement; current != null; current = current.OffsetParent)
-            {
-                Rectangle currentRect = current.OffsetRectangle;
-                rect.X += currentRect.X;
-                rect.Y += currentRect.Y;
-            }
-            return rect;
-        }
-
         private static string DoubleTagMatchEvaluator(Match m)
         {
             int i = Convert.ToInt32(m.Groups["i1"].Value) +
@@ -622,7 +609,7 @@ namespace MyParserLibrary
         {
             var results = new List<object>();
             List<HtmlNode> nodes = HtmlDocument.DocumentNode.SelectNodes(xpath).ToList();
-            List<WebElement> elements = GetElementByNode(nodes);
+            List<IWebElement> elements = GetElementByNode(nodes);
             SetForegroundCurrentProcessMainWindow();
             SetWebBrowserFormFocus();
             SetWebBrowserControlFocus();

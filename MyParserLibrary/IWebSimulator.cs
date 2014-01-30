@@ -10,9 +10,9 @@ namespace MyParserLibrary
 {
     public interface IWebSimulator : IWebTask
     {
-        WebWindow TopmostWindow { get; }
-        WebWindow Window { get; set; }
-        WebDocument WebDocument { get; }
+        IWebWindow TopmostWindow { get; }
+        IWebWindow Window { get; set; }
+        IWebDocument WebDocument { get; }
         IWebSimulator Simulator { get; set; }
         IWebBrowser WebBrowser { get; set; }
         InputSimulator InputSimulator { get; set; }
@@ -26,16 +26,16 @@ namespace MyParserLibrary
         Dictionary<MethodInfo, string> KeyboardMethods { get; }
         Dictionary<MethodInfo, string> SimulatorMethodInfos { get; }
         int DocumentCompleted { get; set; }
-        WebElement HighlightedElement { get; set; }
-        Dictionary<WebWindow, string> Windows(WebWindow window);
-        void Focus(WebElement webElement);
-        void Click(WebElement webElement);
-        void DoubleClick(WebElement webElement);
-        void KeyDown(WebElement webElement, VirtualKeyCode code);
-        void KeyPress(WebElement webElement, VirtualKeyCode code);
-        void KeyUp(WebElement webElement, VirtualKeyCode code);
-        void TextEntry(WebElement webElement, string text);
-        WebElement Select(WebElement webElement);
+        IWebElement HighlightedElement { get; set; }
+        Dictionary<IWebWindow, string> Windows(IWebWindow window);
+        void Focus(IWebElement webElement);
+        void Click(IWebElement webElement);
+        void DoubleClick(IWebElement webElement);
+        void KeyDown(IWebElement webElement, VirtualKeyCode code);
+        void KeyPress(IWebElement webElement, VirtualKeyCode code);
+        void KeyUp(IWebElement webElement, VirtualKeyCode code);
+        void TextEntry(IWebElement webElement, string text);
+        IWebElement Select(IWebElement webElement);
         object[] Focus(string xpath);
         object[] Click(string xpath);
         object[] DoubleClick(string xpath);
@@ -59,13 +59,13 @@ namespace MyParserLibrary
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        List<WebElement> GetElementByNode(List<HtmlNode> nodes);
+        List<IWebElement> GetElementByNode(List<HtmlNode> nodes);
 
-        List<HtmlNode> GetNodeByElement(List<WebElement> elements);
-        void HighlightElement(WebElement webElement, bool highlight, bool scrollToElement);
-        object SimulateTextEntry(WebElement webElement, List<object> parameters);
-        object SimulateEvent(EventInfo eventInfo, WebElement webElement, List<object> parameters);
-        void ScrollToElement(WebElement webElement);
+        List<HtmlNode> GetNodeByElement(List<IWebElement> elements);
+        void HighlightElement(IWebElement webElement, bool highlight, bool scrollToElement);
+        object SimulateTextEntry(IWebElement webElement, List<object> parameters);
+        object SimulateEvent(EventInfo eventInfo, IWebElement webElement, List<object> parameters);
+        void ScrollToElement(IWebElement webElement);
         object RunScript();
     }
 }

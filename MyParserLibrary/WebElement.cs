@@ -1,26 +1,26 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
 
 namespace MyParserLibrary
 {
-    public class WebElement : ObjectManager
+    public class WebElement : ObjectManager, IWebElement
     {
         public WebElement(object managedObject)
             : base(managedObject)
         {
         }
 
-        public WebElement Parent
+        public IWebElement Parent
         {
             get
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
+                var parameters = new object[] {};
                 return new WebElement(methodInfo.Invoke(ManagedObject, parameters));
             }
         }
@@ -31,7 +31,7 @@ namespace MyParserLibrary
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
+                var parameters = new object[] {};
                 return methodInfo.Invoke(ManagedObject, parameters).ToString();
             }
         }
@@ -42,7 +42,7 @@ namespace MyParserLibrary
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
+                var parameters = new object[] {};
                 return methodInfo.Invoke(ManagedObject, parameters).ToString();
             }
         }
@@ -53,27 +53,28 @@ namespace MyParserLibrary
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
+                var parameters = new object[] {};
                 return methodInfo.Invoke(ManagedObject, parameters).ToString();
             }
             set
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { value };
+                var parameters = new object[] {value};
                 methodInfo.Invoke(ManagedObject, parameters);
             }
         }
 
-        public WebElement[] Children
+        public IWebElement[] Children
         {
             get
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
-                var collection = (IEnumerable)methodInfo.Invoke(ManagedObject, parameters);
-                List<WebElement> list = (from object item in collection select new WebElement(item)).ToList();
+                var parameters = new object[] {};
+                var collection = (IEnumerable) methodInfo.Invoke(ManagedObject, parameters);
+                List<IWebElement> list =
+                    (from object item in collection select (IWebElement) new WebElement(item)).ToList();
                 return list.ToArray();
             }
         }
@@ -84,18 +85,18 @@ namespace MyParserLibrary
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
-                return (Rectangle)methodInfo.Invoke(ManagedObject, parameters);
+                var parameters = new object[] {};
+                return (Rectangle) methodInfo.Invoke(ManagedObject, parameters);
             }
         }
 
-        public WebElement OffsetParent
+        public IWebElement OffsetParent
         {
             get
             {
                 string methodName = MethodBase.GetCurrentMethod().Name;
                 MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-                var parameters = new object[] { };
+                var parameters = new object[] {};
                 return new WebElement(methodInfo.Invoke(ManagedObject, parameters));
             }
         }
@@ -104,25 +105,10 @@ namespace MyParserLibrary
         {
             get
             {
-                string xpath = "";
-                WebElement webElement = this;
-                for (WebElement parent = webElement.Parent; !parent.IsNullOrEmpty(); parent = parent.Parent)
-                {
-                    int index = 0;
-                    foreach (WebElement child in parent.Children)
-                    {
-                        if (String.Compare(child.TagName, webElement.TagName, StringComparison.OrdinalIgnoreCase) ==
-                            0)
-                            index++;
-                        if (child.Equals(webElement))
-                        {
-                            xpath = @"/" + webElement.TagName + "[" + index + "]" + xpath;
-                            break;
-                        }
-                    }
-                    webElement = parent;
-                }
-                return @"/" + xpath.ToLower();
+                string methodName = MethodBase.GetCurrentMethod().Name;
+                MethodInfo methodInfo = typeof(MyParserLibrary).GetMethod(methodName);
+                var parameters = new object[] { this };
+                return (string) methodInfo.Invoke(null, parameters);
             }
         }
 
@@ -130,7 +116,7 @@ namespace MyParserLibrary
         {
             string methodName = MethodBase.GetCurrentMethod().Name;
             MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-            var parameters = new object[] { };
+            var parameters = new object[] {};
             methodInfo.Invoke(ManagedObject, parameters);
         }
 
@@ -138,8 +124,25 @@ namespace MyParserLibrary
         {
             string methodName = MethodBase.GetCurrentMethod().Name;
             MethodInfo methodInfo = ManagedObject.GetType().GetMethod(methodName);
-            var parameters = new object[] { b };
+            var parameters = new object[] {b};
             methodInfo.Invoke(ManagedObject, parameters);
+        }
+
+        public bool Equals(IWebElement obj)
+        {
+            Debug.Assert(obj is IObjectManager);
+            return Equals(obj as IObjectManager);
+        }
+
+        public Rectangle Rectangle
+        {
+            get
+            {
+                string methodName = MethodBase.GetCurrentMethod().Name;
+                MethodInfo methodInfo = typeof(MyParserLibrary).GetMethod(methodName);
+                var parameters = new object[] { this };
+                return (Rectangle) methodInfo.Invoke(null, parameters);
+            }
         }
     }
 }

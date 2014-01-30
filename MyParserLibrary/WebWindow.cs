@@ -1,17 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace MyParserLibrary
 {
-    public class WebWindow : ObjectManager
+    public class WebWindow : ObjectManager, IWebWindow
     {
         public WebWindow(object managedObject) : base(managedObject)
         {
         }
 
-        public WebElement WindowFrameElement
+        public IWebElement WindowFrameElement
         {
             get
             {
@@ -22,7 +23,7 @@ namespace MyParserLibrary
             }
         }
 
-        public WebWindow[] Frames
+        public IWebWindow[] Frames
         {
             get
             {
@@ -35,7 +36,7 @@ namespace MyParserLibrary
             }
         }
 
-        public WebDocument Document
+        public IWebDocument Document
         {
             get
             {
@@ -44,6 +45,12 @@ namespace MyParserLibrary
                 var parameters = new object[] {};
                 return new WebDocument(methodInfo.Invoke(ManagedObject, parameters));
             }
+        }
+
+        public bool Equals(IWebWindow obj)
+        {
+            Debug.Assert(obj is IObjectManager);
+            return Equals(obj as IObjectManager);
         }
     }
 }

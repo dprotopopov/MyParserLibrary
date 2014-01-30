@@ -66,6 +66,7 @@ namespace MyWebSimulator
             this.ribbonPage1 = new DevExpress.XtraBars.Ribbon.RibbonPage();
             this.ribbonPageGroup1 = new DevExpress.XtraBars.Ribbon.RibbonPageGroup();
             this.ribbonStatusBar1 = new DevExpress.XtraBars.Ribbon.RibbonStatusBar();
+            this.TextEntry = new DevExpress.XtraVerticalGrid.Rows.EditorRow();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -164,7 +165,8 @@ namespace MyWebSimulator
             this.LastError,
             this.SimulatorMethodInfo,
             this.MouseMethodInfo,
-            this.KeyboardMethodInfo});
+            this.KeyboardMethodInfo,
+            this.TextEntry});
             this.propertyGridControlWorkspace.Size = new System.Drawing.Size(1156, 169);
             this.propertyGridControlWorkspace.TabIndex = 1;
             // 
@@ -496,6 +498,12 @@ namespace MyWebSimulator
             this.ribbonStatusBar1.Ribbon = this.ribbonControl1;
             this.ribbonStatusBar1.Size = new System.Drawing.Size(1156, 28);
             // 
+            // TextEntry
+            // 
+            this.TextEntry.Name = "TextEntry";
+            this.TextEntry.Properties.Caption = "TextEntry";
+            this.TextEntry.Properties.FieldName = "TextEntry";
+            // 
             // MyWebSimulatorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
@@ -590,6 +598,7 @@ namespace MyWebSimulator
         private DevExpress.XtraVerticalGrid.Rows.EditorRow MouseMethodInfo;
         private DevExpress.XtraVerticalGrid.Rows.EditorRow KeyboardMethodInfo;
         private System.Windows.Forms.ListBox listBoxWindows;
+        private DevExpress.XtraVerticalGrid.Rows.EditorRow TextEntry;
     }
 }
 

@@ -69,14 +69,18 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="Defaults.cs" />
+    <Compile Include="IObjectManager.cs" />
     <Compile Include="ITaskWorker.cs" />
     <Compile Include="IWebBrowser.cs" />
     <Compile Include="IWebDictionaryQuery.cs" />
+    <Compile Include="IWebDocument.cs" />
+    <Compile Include="IWebElement.cs" />
     <Compile Include="IWebPublicationLookup.cs" />
     <Compile Include="IWebQuery.cs" />
     <Compile Include="IWebSearchLookup.cs" />
     <Compile Include="IWebSimulator.cs" />
     <Compile Include="IWebTask.cs" />
+    <Compile Include="IWebWindow.cs" />
     <Compile Include="OnWebQueryDelegate.cs" />
     <Compile Include="OnWebTaskDelegate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

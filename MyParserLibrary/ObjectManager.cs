@@ -1,6 +1,6 @@
 ﻿namespace MyParserLibrary
 {
-    public class ObjectManager
+    public class ObjectManager : IObjectManager
     {
         public ObjectManager(object managedObject)
         {
@@ -9,7 +9,7 @@
 
         public object ManagedObject { get; set; }
 
-        public bool Equals(ObjectManager obj)
+        public bool Equals(IObjectManager obj)
         {
             return ManagedObject.Equals(obj.ManagedObject);
         }
