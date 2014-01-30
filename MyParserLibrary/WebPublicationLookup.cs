@@ -11,8 +11,11 @@ namespace MyParserLibrary
             ReturnFieldInfos.Add(Defaults.DefaultEmailInfo);
             ReturnFieldInfos.Add(Defaults.DefaultPhoneInfo);
             ReturnFieldInfos.Add(Defaults.DefaultPublicationIdInfo);
+            PublicationId = @"";
         }
+
         public string PublicationId { get; set; }
+
         public override ListViewItem ToListViewItem()
         {
             ListViewItem viewItem = base.ToListViewItem();

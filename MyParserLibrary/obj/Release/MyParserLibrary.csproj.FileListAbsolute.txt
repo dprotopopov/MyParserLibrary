@@ -5,8 +5,7 @@ D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\HtmlAgilityPack.pdb
 D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\HtmlAgilityPack.xml
 D:\Projects\MyParserLibrary\MyParserLibrary\obj\Release\MyParserLibrary.dll
 D:\Projects\MyParserLibrary\MyParserLibrary\obj\Release\MyParserLibrary.pdb
-D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\MouseKeyboardActivityMonitor.dll
 D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\WindowsInput.dll
-D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\MouseKeyboardActivityMonitor.xml
 D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\WindowsInput.xml
 D:\Projects\MyParserLibrary\MyParserLibrary\obj\Release\MyParserLibrary.csprojResolveAssemblyReference.cache
+D:\Projects\MyParserLibrary\MyParserLibrary\bin\Release\Jint.dll

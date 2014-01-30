@@ -5,7 +5,7 @@ namespace MyParserLibrary
     {
         public static ReturnFieldInfo DefaultUrlInfo = new ReturnFieldInfo
         {
-            ReturnFieldId = "Uri",
+            ReturnFieldId = "Url",
             ReturnFieldXpath = @"//a[@href]",
             ReturnFieldResult = @"{{href}}",
             ReturnFieldRegexPattern = @".*",

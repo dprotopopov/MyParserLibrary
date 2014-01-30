@@ -42,6 +42,12 @@
     <AssemblyOriginatorKeyFile>MyParserLibrary.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CefSharp">
+      <HintPath>..\packages\CefSharp.WinForms.1.25.3\lib\net40\CefSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="CefSharp.WinForms">
+      <HintPath>..\packages\CefSharp.WinForms.1.25.3\lib\net40\CefSharp.WinForms.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -50,7 +56,9 @@
       <HintPath>.\Jint.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -62,6 +70,7 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Defaults.cs" />
     <Compile Include="ITaskWorker.cs" />
+    <Compile Include="IWebBrowser.cs" />
     <Compile Include="IWebDictionaryQuery.cs" />
     <Compile Include="IWebPublicationLookup.cs" />
     <Compile Include="IWebQuery.cs" />
@@ -75,7 +84,16 @@
     <Compile Include="ReturnFieldInfos.cs" />
     <Compile Include="ReturnFields.cs" />
     <Compile Include="MyParserLibrary.cs" />
+    <Compile Include="ObjectManager.cs" />
+    <Compile Include="WebBrowser.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="WebBrowser.Designer.cs">
+      <DependentUpon>WebBrowser.cs</DependentUpon>
+    </Compile>
     <Compile Include="WebDictionaryQuery.cs" />
+    <Compile Include="WebDocument.cs" />
+    <Compile Include="WebElement.cs" />
     <Compile Include="WebPublicationLookup.cs" />
     <Compile Include="WebQueryCallback.cs" />
     <Compile Include="WebQuery.cs" />
@@ -84,6 +102,7 @@
     <Compile Include="WebTask.cs" />
     <Compile Include="WebTaskCallback.cs" />
     <Compile Include="WebTaskManager.cs" />
+    <Compile Include="WebWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="MyParserLibrary.snk" />

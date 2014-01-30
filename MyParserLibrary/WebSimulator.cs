@@ -13,7 +13,7 @@ using WindowsInput;
 using WindowsInput.Native;
 using HtmlAgilityPack;
 using Jint;
-using HtmlDocument = System.Windows.Forms.HtmlDocument;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace MyParserLibrary
 {
@@ -24,7 +24,7 @@ namespace MyParserLibrary
             Simulator = this;
             InputSimulator = new InputSimulator();
             DocumentCompleted = 0;
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine(@"while(Simulator.get_DocumentCompleted()==0) Simulator.Sleep(1000);");
             sb.AppendLine(@"return 0;");
             JavaScript = sb.ToString();
@@ -32,19 +32,52 @@ namespace MyParserLibrary
             JintEngine.SetFunction("alert", new Action<object>(s => Debug.WriteLine(s)));
         }
 
-        public HtmlDocument Document
+        public WebWindow TopmostWindow
         {
-            get { return WebBrowser.Document; }
+            get { return WebBrowser.Document.Window; }
         }
 
-        public WebSimulator Simulator { get; set; }
-        public WebBrowser WebBrowser { get; set; }
+        public WebWindow Window { get; set; }
 
-        public Uri Uri
+        public Dictionary<WebWindow, string> Windows(WebWindow window)
         {
-            get { return WebBrowser.Url; }
-            set { WebBrowser.Url = value; }
+            Debug.Assert(!window.IsNullOrEmpty());
+
+            var dictionary = new Dictionary<WebWindow, string>();
+            var stack = new Stack<KeyValuePair<WebWindow, string>>();
+            stack.Push(new KeyValuePair<WebWindow, string>(window, ""));
+            while (stack.Any())
+            {
+                try
+                {
+                    KeyValuePair<WebWindow, string> item = stack.Pop();
+                    string xpath = item.Value;
+                    if (!item.Key.WindowFrameElement.IsNullOrEmpty())
+                    {
+                        xpath += item.Key.WindowFrameElement.XPath;
+                    }
+                    dictionary.Add(item.Key, xpath);
+                    if (item.Key.Frames != null)
+                        foreach (WebWindow child in item.Key.Frames.Reverse())
+                        {
+                            stack.Push(new KeyValuePair<WebWindow, string>(child, xpath));
+                        }
+                }
+                catch (Exception exception)
+                {
+                    LastError = exception;
+                }
+            }
+            return dictionary;
         }
+
+        public WebDocument WebDocument
+        {
+            get { return Window.Document; }
+        }
+
+        public IWebSimulator Simulator { get; set; }
+        public IWebBrowser WebBrowser { get; set; }
 
         public InputSimulator InputSimulator { get; set; }
 
@@ -58,14 +91,14 @@ namespace MyParserLibrary
             get { return InputSimulator.Keyboard; }
         }
 
-        public HtmlAgilityPack.HtmlDocument HtmlDocument
+        public HtmlDocument HtmlDocument
         {
             get
             {
-                var document = new HtmlAgilityPack.HtmlDocument();
-                if (Document.Body != null)
-                    if (Document.Body.Parent != null)
-                        document.LoadHtml(Document.Body.Parent.OuterHtml);
+                var document = new HtmlDocument();
+                if (WebDocument.Body != null)
+                    if (WebDocument.Body.Parent != null)
+                        document.LoadHtml(WebDocument.Body.Parent.OuterHtml);
                 return document;
             }
         }
@@ -77,7 +110,7 @@ namespace MyParserLibrary
         {
             get
             {
-                Type type = typeof(HtmlElement);
+                Type type = typeof (HtmlElement);
                 return type.GetEvents().ToDictionary(item => item, item => item.Name);
             }
         }
@@ -86,7 +119,7 @@ namespace MyParserLibrary
         {
             get
             {
-                Type type = typeof(MouseSimulator);
+                Type type = typeof (MouseSimulator);
                 return type.GetMethods().ToDictionary(item => item, item => item.Name);
             }
         }
@@ -95,7 +128,7 @@ namespace MyParserLibrary
         {
             get
             {
-                Type type = typeof(KeyboardSimulator);
+                Type type = typeof (KeyboardSimulator);
                 return type.GetMethods().ToDictionary(item => item, item => item.Name);
             }
         }
@@ -110,168 +143,7 @@ namespace MyParserLibrary
         }
 
         public int DocumentCompleted { get; set; }
-        public HtmlElement HighlightedElement { get; set; }
-
-        #region
-
-        public void Focus(HtmlElement htmlElement)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-        }
-
-        public void Click(HtmlElement htmlElement)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
-        }
-
-        public void DoubleClick(HtmlElement htmlElement)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
-            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
-        }
-
-        public void KeyDown(HtmlElement htmlElement, VirtualKeyCode code)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.KeyDown(code);
-        }
-
-        public void KeyPress(HtmlElement htmlElement, VirtualKeyCode code)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.KeyPress(code);
-        }
-
-        public void KeyUp(HtmlElement htmlElement, VirtualKeyCode code)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.KeyUp(code);
-        }
-
-        public void TextEntry(HtmlElement htmlElement, string text)
-        {
-            HighlightElement(HighlightedElement, false, false);
-            HighlightElement(HighlightedElement = htmlElement, true, true);
-            htmlElement.Focus();
-            InputSimulator.Keyboard.TextEntry(text);
-        }
-
-        public HtmlElement Select(HtmlElement htmlElement)
-        {
-            return htmlElement;
-        }
-
-        #endregion
-
-        #region
-
-        public object[] Focus(string xpath)
-        {
-            var parameters = new List<object>();
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] Click(string xpath)
-        {
-            var parameters = new List<object>();
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] DoubleClick(string xpath)
-        {
-            var parameters = new List<object>();
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] KeyDown(string xpath, VirtualKeyCode code)
-        {
-            var parameters = new List<object> { code };
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] KeyPress(string xpath, VirtualKeyCode code)
-        {
-            var parameters = new List<object> { code };
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] KeyUp(string xpath, VirtualKeyCode code)
-        {
-            var parameters = new List<object> { code };
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] TextEntry(string xpath, string text)
-        {
-            var parameters = new List<object> { text };
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        public object[] Select(string xpath)
-        {
-            var parameters = new List<object>();
-            var types = new List<Type> { typeof(HtmlElement) };
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
-        }
-
-        #endregion
-
-        public static Rectangle GetElementRectangle(HtmlElement htmlElement)
-        {
-            var rect = new Rectangle(0, 0, htmlElement.OffsetRectangle.Width, htmlElement.OffsetRectangle.Height);
-            for (HtmlElement current = htmlElement; current != null; current = current.OffsetParent)
-            {
-                Rectangle currentRect = current.OffsetRectangle;
-                rect.X += currentRect.X;
-                rect.Y += currentRect.Y;
-            }
-            return rect;
-        }
+        public WebElement HighlightedElement { get; set; }
 
         /// <summary>
         ///     Возвращает строку, которая представляет текущий объект.
@@ -282,7 +154,7 @@ namespace MyParserLibrary
         /// <filterpriority>2</filterpriority>
         public override string ToString()
         {
-            return Uri.ToString();
+            return WebBrowser.Url.ToString();
         }
 
         public void Sleep(int millisecondsTimeout)
@@ -298,7 +170,7 @@ namespace MyParserLibrary
             string url = This.ParserLibrary.ParseTemplate(This.Url, arguments);
             This.WebBrowser.Navigate(url);
             This.RunScript();
-            HtmlAgilityPack.HtmlDocument doc = This.HtmlDocument;
+            HtmlDocument doc = This.HtmlDocument;
             try
             {
                 This.ReturnFields = This.ParserLibrary.BuildReturnFields(doc.DocumentNode, arguments,
@@ -366,28 +238,6 @@ namespace MyParserLibrary
             return result;
         }
 
-        public string GetXPath(HtmlElement item)
-        {
-            string xpath = "";
-
-            for (HtmlElement parent = item.Parent; parent != null; parent = parent.Parent)
-            {
-                int index = 0;
-                foreach (HtmlElement child in parent.Children)
-                {
-                    if (String.Compare(child.TagName, item.TagName, StringComparison.OrdinalIgnoreCase) == 0)
-                        index++;
-                    if (child == item)
-                    {
-                        xpath = @"/" + item.TagName + "[" + index + "]" + xpath;
-                        break;
-                    }
-                }
-                item = parent;
-            }
-            return @"/" + xpath.ToLower();
-        }
-
         public string XPathToMask(string mask)
         {
             mask = new Regex(@"(\/|\[|\])").Replace(mask, @"\$&");
@@ -407,27 +257,20 @@ namespace MyParserLibrary
             return xpath;
         }
 
-        private static string DoubleTagMatchEvaluator(Match m)
-        {
-            int i = Convert.ToInt32(m.Groups["i1"].Value) +
-                    m.Groups["i2"].Captures.Cast<Capture>().Sum(capture => Convert.ToInt32(capture.Value));
-            return m.Groups["start"].Value + i + m.Groups["end"].Value;
-        }
-
         /// <summary>
-        ///     Get HtmlElement by HtmlNode
+        ///     Get WebElement by HtmlNode
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        public List<HtmlElement> GetElementByNode(List<HtmlNode> nodes)
+        public List<WebElement> GetElementByNode(List<HtmlNode> nodes)
         {
-            var elements = new List<HtmlElement>();
+            var elements = new List<WebElement>();
 
             var dictionaryNode = new Dictionary<HtmlNode, string>();
-            var dictionaryElement = new Dictionary<HtmlElement, string>();
-            foreach (HtmlElement item in Document.All)
+            var dictionaryElement = new Dictionary<WebElement, string>();
+            foreach (WebElement item in WebDocument.All)
             {
-                string xpath = XPathSanitize(GetXPath(item));
+                string xpath = XPathSanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
             }
             foreach (HtmlNode item in nodes)
@@ -438,9 +281,9 @@ namespace MyParserLibrary
 
             foreach (var item in dictionaryNode.Select(node => XPathToMask(node.Value))
                 .SelectMany(mask => (from item in dictionaryElement
-                                     let matches = Regex.Matches(item.Value, mask)
-                                     where matches.Count == 1 && !elements.Contains(item.Key)
-                                     select item)))
+                    let matches = Regex.Matches(item.Value, mask)
+                    where matches.Count == 1 && !elements.Contains(item.Key)
+                    select item)))
             {
                 Debug.WriteLine(item.Value);
                 elements.Add(item.Key);
@@ -448,15 +291,15 @@ namespace MyParserLibrary
             return elements;
         }
 
-        public List<HtmlNode> GetNodeByElement(List<HtmlElement> elements)
+        public List<HtmlNode> GetNodeByElement(List<WebElement> elements)
         {
             var nodes = new List<HtmlNode>();
 
             var dictionaryNode = new Dictionary<HtmlNode, string>();
-            var dictionaryElement = new Dictionary<HtmlElement, string>();
-            foreach (HtmlElement item in elements)
+            var dictionaryElement = new Dictionary<WebElement, string>();
+            foreach (WebElement item in elements)
             {
-                string xpath = XPathSanitize(GetXPath(item));
+                string xpath = XPathSanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
             }
             foreach (HtmlNode item in HtmlDocument.DocumentNode.SelectNodes(@"//*").ToList())
@@ -467,9 +310,9 @@ namespace MyParserLibrary
 
             foreach (var item in dictionaryElement.Select(element => XPathToMask(element.Value))
                 .SelectMany(mask => (from item in dictionaryNode
-                                     let matches = Regex.Matches(item.Value, mask)
-                                     where matches.Count == 1 && !nodes.Contains(item.Key)
-                                     select item)))
+                    let matches = Regex.Matches(item.Value, mask)
+                    where matches.Count == 1 && !nodes.Contains(item.Key)
+                    select item)))
             {
                 Debug.WriteLine(item.Value);
                 nodes.Add(item.Key);
@@ -477,9 +320,9 @@ namespace MyParserLibrary
             return nodes;
         }
 
-        public void HighlightElement(HtmlElement element, bool highlight, bool scrollToElement)
+        public void HighlightElement(WebElement webElement, bool highlight, bool scrollToElement)
         {
-            if (scrollToElement) ScrollToElement(element);
+            if (scrollToElement) ScrollToElement(webElement);
 
             var styles = new Dictionary<string, string>
             {
@@ -488,17 +331,17 @@ namespace MyParserLibrary
                 {@"border-style:solid;", @"border(-(left|right|top|bottom))?-style\s*:\s*solid(\s*;)?"},
                 {@"border-width:4px;", @"border(-(left|right|top|bottom))?-width\s*:\s*4px(\s*;)?"},
             };
-            if (element != null)
+            if (webElement != null)
             {
                 if (highlight)
                 {
                     try
                     {
-                        element.Style += styles.Keys.Aggregate((i, j) => i + j);
+                        webElement.Style += styles.Keys.Aggregate((i, j) => i + j);
                     }
                     catch (Exception)
                     {
-                        element.Style = styles.Keys.Aggregate((i, j) => i + j);
+                        webElement.Style = styles.Keys.Aggregate((i, j) => i + j);
                     }
                 }
                 else
@@ -508,37 +351,21 @@ namespace MyParserLibrary
                         foreach (
                             Regex regex in styles.Values.Select(pattern => new Regex(pattern, RegexOptions.IgnoreCase)))
                         {
-                            element.Style = regex.Replace(element.Style, @"");
+                            webElement.Style = regex.Replace(webElement.Style, @"");
                         }
                     }
                     catch (Exception)
                     {
-                        element.Style = @"";
+                        webElement.Style = @"";
                     }
                 }
             }
         }
 
-        private List<object> InvokeMethod(MethodInfo methodInfo, string xpath, List<object> args)
+        public object SimulateTextEntry(WebElement webElement, List<object> parameters)
         {
-            var results = new List<object>();
-            List<HtmlNode> nodes = HtmlDocument.DocumentNode.SelectNodes(xpath).ToList();
-            List<HtmlElement> elements = GetElementByNode(nodes);
-            SetForegroundCurrentProcessMainWindow();
-            SetWebBrowserFormFocus();
-            SetWebBrowserControlFocus();
-            foreach (var objects in elements.Select(element => new List<object> { element }))
-            {
-                objects.AddRange(args);
-                results.Add(methodInfo.Invoke(this, objects.ToArray()));
-            }
-            return results;
-        }
-
-        public object SimulateTextEntry(HtmlElement htmlElement, List<object> parameters)
-        {
-            MethodInfo methodInfo = GetType().GetMethod("TextEntry", new[] { typeof(HtmlElement), typeof(string) });
-            var objects = new List<object> { htmlElement };
+            MethodInfo methodInfo = GetType().GetMethod("TextEntry", new[] {typeof (WebElement), typeof (string)});
+            var objects = new List<object> {webElement};
             objects.AddRange(parameters);
             SetForegroundCurrentProcessMainWindow();
             SetWebBrowserFormFocus();
@@ -546,33 +373,33 @@ namespace MyParserLibrary
             return methodInfo.Invoke(this, objects.ToArray());
         }
 
-        public object SimulateEvent(EventInfo eventInfo, HtmlElement htmlElement, List<object> parameters)
+        public object SimulateEvent(EventInfo eventInfo, WebElement webElement, List<object> parameters)
         {
             var dictionary = new Dictionary<EventInfo, MethodInfo>
             {
-                {typeof (HtmlElement).GetEvent("GotFocus"), GetType().GetMethod("Focus", new[] {typeof (HtmlElement)})},
-                {typeof (HtmlElement).GetEvent("Click"), GetType().GetMethod("Click", new[] {typeof (HtmlElement)})},
+                {typeof (HtmlElement).GetEvent("GotFocus"), GetType().GetMethod("Focus", new[] {typeof (WebElement)})},
+                {typeof (HtmlElement).GetEvent("Click"), GetType().GetMethod("Click", new[] {typeof (WebElement)})},
                 {
                     typeof (HtmlElement).GetEvent("DoubleClick"),
-                    GetType().GetMethod("DoubleClick", new[] {typeof (HtmlElement)})
+                    GetType().GetMethod("DoubleClick", new[] {typeof (WebElement)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyDown"),
-                    GetType().GetMethod("KeyDown", new[] {typeof (HtmlElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyDown", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyPress"),
-                    GetType().GetMethod("KeyPress", new[] {typeof (HtmlElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyPress", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
                 },
                 {
                     typeof (HtmlElement).GetEvent("KeyUp"),
-                    GetType().GetMethod("KeyUp", new[] {typeof (HtmlElement), typeof (VirtualKeyCode)})
+                    GetType().GetMethod("KeyUp", new[] {typeof (WebElement), typeof (VirtualKeyCode)})
                 },
             };
             if (dictionary.ContainsKey(eventInfo))
             {
                 MethodInfo methodInfo = dictionary[eventInfo];
-                var objects = new List<object> { htmlElement };
+                var objects = new List<object> {webElement};
                 objects.AddRange(parameters);
                 SetForegroundCurrentProcessMainWindow();
                 SetWebBrowserFormFocus();
@@ -582,11 +409,15 @@ namespace MyParserLibrary
             throw new NotImplementedException();
         }
 
-        public void ScrollToElement(HtmlElement htmlElement)
+        public void ScrollToElement(WebElement webElement)
         {
-            if (htmlElement != null)
+            try
             {
-                htmlElement.ScrollIntoView(true);
+                webElement.ScrollIntoView(true);
+            }
+            catch (Exception exception)
+            {
+                LastError = exception;
             }
         }
 
@@ -618,5 +449,189 @@ namespace MyParserLibrary
         private static extern IntPtr GetForegroundWindow();
 
         #endregion
+
+        #region
+
+        public void Focus(WebElement webElement)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+        }
+
+        public void Click(WebElement webElement)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
+        }
+
+        public void DoubleClick(WebElement webElement)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
+            InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
+        }
+
+        public void KeyDown(WebElement webElement, VirtualKeyCode code)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.KeyDown(code);
+        }
+
+        public void KeyPress(WebElement webElement, VirtualKeyCode code)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.KeyPress(code);
+        }
+
+        public void KeyUp(WebElement webElement, VirtualKeyCode code)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.KeyUp(code);
+        }
+
+        public void TextEntry(WebElement webElement, string text)
+        {
+            HighlightElement(HighlightedElement, false, false);
+            HighlightElement(HighlightedElement = webElement, true, true);
+            webElement.Focus();
+            InputSimulator.Keyboard.TextEntry(text);
+        }
+
+        public WebElement Select(WebElement webElement)
+        {
+            return webElement;
+        }
+
+        #endregion
+
+        #region
+
+        public object[] Focus(string xpath)
+        {
+            var parameters = new List<object>();
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] Click(string xpath)
+        {
+            var parameters = new List<object>();
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] DoubleClick(string xpath)
+        {
+            var parameters = new List<object>();
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] KeyDown(string xpath, VirtualKeyCode code)
+        {
+            var parameters = new List<object> {code};
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] KeyPress(string xpath, VirtualKeyCode code)
+        {
+            var parameters = new List<object> {code};
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] KeyUp(string xpath, VirtualKeyCode code)
+        {
+            var parameters = new List<object> {code};
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] TextEntry(string xpath, string text)
+        {
+            var parameters = new List<object> {text};
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        public object[] Select(string xpath)
+        {
+            var parameters = new List<object>();
+            var types = new List<Type> {typeof (WebElement)};
+            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
+            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+        }
+
+        #endregion
+
+        public static Rectangle GetElementRectangle(WebElement htmlElement)
+        {
+            var rect = new Rectangle(0, 0, htmlElement.OffsetRectangle.Width, htmlElement.OffsetRectangle.Height);
+            for (WebElement current = htmlElement; current != null; current = current.OffsetParent)
+            {
+                Rectangle currentRect = current.OffsetRectangle;
+                rect.X += currentRect.X;
+                rect.Y += currentRect.Y;
+            }
+            return rect;
+        }
+
+        private static string DoubleTagMatchEvaluator(Match m)
+        {
+            int i = Convert.ToInt32(m.Groups["i1"].Value) +
+                    m.Groups["i2"].Captures.Cast<Capture>().Sum(capture => Convert.ToInt32(capture.Value));
+            return m.Groups["start"].Value + i + m.Groups["end"].Value;
+        }
+
+        private List<object> InvokeMethod(MethodInfo methodInfo, string xpath, List<object> args)
+        {
+            var results = new List<object>();
+            List<HtmlNode> nodes = HtmlDocument.DocumentNode.SelectNodes(xpath).ToList();
+            List<WebElement> elements = GetElementByNode(nodes);
+            SetForegroundCurrentProcessMainWindow();
+            SetWebBrowserFormFocus();
+            SetWebBrowserControlFocus();
+            foreach (var objects in elements.Select(element => new List<object> {element}))
+            {
+                objects.AddRange(args);
+                results.Add(methodInfo.Invoke(this, objects.ToArray()));
+            }
+            return results;
+        }
     }
 }

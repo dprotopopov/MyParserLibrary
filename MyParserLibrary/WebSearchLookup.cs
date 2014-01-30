@@ -9,6 +9,7 @@ namespace MyParserLibrary
         public WebSearchLookup()
         {
             ReturnFieldInfos.Add(Defaults.DefaultOtherPageUrlInfo);
+            PageId = 0;
         }
 
         public int PageId { get; set; }

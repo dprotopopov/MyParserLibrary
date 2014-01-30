@@ -27,9 +27,12 @@ namespace MyParserLibrary
             ReturnFieldInfos = new ReturnFieldInfos();
             ParserLibrary = new MyParserLibrary();
             Method = "GET";
+            Cookie = "";
         }
 
         #region Методы
+
+        public object LastError { get; set; }
 
         public void Start()
         {
@@ -39,6 +42,10 @@ namespace MyParserLibrary
                 Status = WebTaskStatus.Running;
                 if (OnStartCallback != null) OnStartCallback(this);
                 Thread.Start(this);
+            }
+            else
+            {
+                LastError = "Thread is null";
             }
         }
 
@@ -51,6 +58,10 @@ namespace MyParserLibrary
                 Thread = null;
                 if (OnAbortCallback != null) OnAbortCallback(this);
             }
+            else
+            {
+                LastError = "Thread is null";
+            }
         }
 
         public void Resume()
@@ -61,11 +72,22 @@ namespace MyParserLibrary
                 if (OnResumeCallback != null) OnResumeCallback(this);
                 Thread.Resume();
             }
+            else
+            {
+                LastError = "Thread is null";
+            }
         }
 
         public void Join()
         {
-            if (Thread != null) Thread.Join();
+            if (Thread != null)
+            {
+                Thread.Join();
+            }
+            else
+            {
+                LastError = "Thread is null";
+            }
         }
 
         #endregion
@@ -91,8 +113,9 @@ namespace MyParserLibrary
                 This.Thread = null;
                 if (This.OnCompliteCallback != null) This.OnCompliteCallback(This);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                This.LastError = exception;
                 This.Status = WebTaskStatus.Error;
                 This.Thread = null;
                 if (This.OnErrorCallback != null) This.OnErrorCallback(This);
@@ -118,7 +141,7 @@ namespace MyParserLibrary
         public ReturnFields ReturnFields { get; set; }
         public Thread Thread { get; set; }
         public WebTaskStatus Status { get; set; }
-
+        public string Cookie { set; get; }
         public MyParserLibrary ParserLibrary { get; set; }
 
         #endregion

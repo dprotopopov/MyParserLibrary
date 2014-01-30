@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Windows.Forms;
@@ -6,16 +5,16 @@ using WindowsInput;
 using WindowsInput.Native;
 using HtmlAgilityPack;
 using Jint;
-using HtmlDocument = System.Windows.Forms.HtmlDocument;
 
 namespace MyParserLibrary
 {
     public interface IWebSimulator : IWebTask
     {
-        HtmlDocument Document { get; }
-        WebSimulator Simulator { get; set; }
-        WebBrowser WebBrowser { get; set; }
-        Uri Uri { get; set; }
+        WebWindow TopmostWindow { get; }
+        WebWindow Window { get; set; }
+        WebDocument WebDocument { get; }
+        IWebSimulator Simulator { get; set; }
+        IWebBrowser WebBrowser { get; set; }
         InputSimulator InputSimulator { get; set; }
         IMouseSimulator MouseSimulator { get; }
         IKeyboardSimulator KeyboardSimulator { get; }
@@ -27,15 +26,16 @@ namespace MyParserLibrary
         Dictionary<MethodInfo, string> KeyboardMethods { get; }
         Dictionary<MethodInfo, string> SimulatorMethodInfos { get; }
         int DocumentCompleted { get; set; }
-        HtmlElement HighlightedElement { get; set; }
-        void Focus(HtmlElement htmlElement);
-        void Click(HtmlElement htmlElement);
-        void DoubleClick(HtmlElement htmlElement);
-        void KeyDown(HtmlElement htmlElement, VirtualKeyCode code);
-        void KeyPress(HtmlElement htmlElement, VirtualKeyCode code);
-        void KeyUp(HtmlElement htmlElement, VirtualKeyCode code);
-        void TextEntry(HtmlElement htmlElement, string text);
-        HtmlElement Select(HtmlElement htmlElement);
+        WebElement HighlightedElement { get; set; }
+        Dictionary<WebWindow, string> Windows(WebWindow window);
+        void Focus(WebElement webElement);
+        void Click(WebElement webElement);
+        void DoubleClick(WebElement webElement);
+        void KeyDown(WebElement webElement, VirtualKeyCode code);
+        void KeyPress(WebElement webElement, VirtualKeyCode code);
+        void KeyUp(WebElement webElement, VirtualKeyCode code);
+        void TextEntry(WebElement webElement, string text);
+        WebElement Select(WebElement webElement);
         object[] Focus(string xpath);
         object[] Click(string xpath);
         object[] DoubleClick(string xpath);
@@ -51,7 +51,6 @@ namespace MyParserLibrary
         void SetWebBrowserFormFocus();
         bool SetWebBrowserControlFocus();
         bool SetForegroundCurrentProcessMainWindow();
-        string GetXPath(HtmlElement item);
         string XPathToMask(string mask);
         string XPathSanitize(string xpath);
 
@@ -60,13 +59,13 @@ namespace MyParserLibrary
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        List<HtmlElement> GetElementByNode(List<HtmlNode> nodes);
+        List<WebElement> GetElementByNode(List<HtmlNode> nodes);
 
-        List<HtmlNode> GetNodeByElement(List<HtmlElement> elements);
-        void HighlightElement(HtmlElement element, bool highlight, bool scrollToElement);
-        object SimulateTextEntry(HtmlElement htmlElement, List<object> parameters);
-        object SimulateEvent(EventInfo eventInfo, HtmlElement htmlElement, List<object> parameters);
-        void ScrollToElement(HtmlElement htmlElement);
+        List<HtmlNode> GetNodeByElement(List<WebElement> elements);
+        void HighlightElement(WebElement webElement, bool highlight, bool scrollToElement);
+        object SimulateTextEntry(WebElement webElement, List<object> parameters);
+        object SimulateEvent(EventInfo eventInfo, WebElement webElement, List<object> parameters);
+        void ScrollToElement(WebElement webElement);
         object RunScript();
     }
 }

@@ -11,6 +11,7 @@ namespace MyParserLibrary
         string Method { get; set; }
         string Username { get; set; }
         string Password { get; set; }
+        string Cookie { set; get; }
         ReturnFieldInfos ReturnFieldInfos { get; set; }
         ReturnFields ReturnFields { get; set; }
         Thread Thread { get; set; }
@@ -21,6 +22,7 @@ namespace MyParserLibrary
         WebTaskCallback OnResumeCallback { get; set; }
         WebTaskCallback OnCompliteCallback { get; set; }
         WebTaskCallback OnErrorCallback { get; set; }
+        object LastError { get; set; }
         void Start();
         void Abort();
         void Resume();
