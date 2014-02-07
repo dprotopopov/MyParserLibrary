@@ -1,0 +1,6 @@
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Release\MyParserLibrary.UnitTest.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Release\MyParserLibrary.UnitTest.pdb
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\bin\Release\Jint.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\obj\Release\MyParserLibrary.UnitTest.csprojResolveAssemblyReference.cache
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\obj\Release\MyParserLibrary.UnitTest.dll
+D:\Projects\MyParserLibrary\MyParserLibrary.UnitTest\obj\Release\MyParserLibrary.UnitTest.pdb

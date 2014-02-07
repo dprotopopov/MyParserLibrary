@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MyWebCrawler</name>
+    </assembly>
+    <members>
+        <member name="T:MyWebCrawler.NamespaceDoc">
+            <summary>
+                <see cref="N:MyWebCrawler"/> пространство содержит классы для загрузки контента с сайтов.
+            </summary>
+        </member>
+        <member name="T:MyWebCrawler.UriEventArgs">
+            <summary>
+                Аргумент события в виде Uri
+            </summary>
+        </member>
+        <member name="M:MyWebCrawler.UriEventArgs.#ctor(System.Uri)">
+            <summary>
+                Конструктор аргумента
+            </summary>
+            <param name="url"></param>
+        </member>
+        <member name="P:MyWebCrawler.UriEventArgs.Url">
+            <summary>
+                Cсылка
+            </summary>
+        </member>
+        <member name="T:MyWebCrawler.WebCrawler">
+            <summary>
+                Crawler (получения контента с веба)
+            </summary>
+        </member>
+        <member name="T:MyWebCrawler.ICrawler">
+            <summary>
+                Интерфейс Crawler (получения контента с веба)
+            </summary>
+        </member>
+        <member name="M:MyWebCrawler.ICrawler.GetResponse(System.Net.WebRequest)">
+            <summary>
+                Получить ответ
+            </summary>
+            <param name="request">Запрос</param>
+            <returns>Ответ</returns>
+        </member>
+        <member name="M:MyWebCrawler.WebCrawler.GetResponse(System.Net.WebRequest)">
+            <summary>
+                Получить ответ
+            </summary>
+            <param name="request">Запрос</param>
+            <returns>Ответ</returns>
+        </member>
+        <member name="M:MyWebCrawler.WebCrawler.OnUriLogger(MyWebCrawler.UriEventArgs)">
+            <summary>
+                Логирование запроса ссылки
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="E:MyWebCrawler.WebCrawler.UriLogger">
+            <summary>
+                Событие запроса Uri
+            </summary>
+        </member>
+    </members>
+</doc>

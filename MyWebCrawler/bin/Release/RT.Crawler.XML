@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RT.Crawler</name>
+    </assembly>
+    <members>
+        <member name="T:RT.Crawler.NamespaceDoc">
+            <summary>
+            <see cref="N:RT.Crawler"/> пространство содержит классы для загрузки контента с сайтов.
+            </summary>
+        </member>
+        <member name="T:RT.Crawler.UriEventArgs">
+            <summary>
+            Аргумент события в виде Uri
+            </summary>
+        </member>
+        <member name="M:RT.Crawler.UriEventArgs.#ctor(System.Uri)">
+            <summary>
+            Конструктор аргумента
+            </summary>
+            <param name="url"></param>
+        </member>
+        <member name="P:RT.Crawler.UriEventArgs.Url">
+            <summary>
+            Cсылка
+            </summary>
+        </member>
+        <member name="T:RT.Crawler.WebCrawler">
+            <summary>
+            Crawler (получения контента с веба)
+            </summary>
+        </member>
+        <member name="T:RT.Crawler.ICrawler">
+            <summary>
+            Интерфейс Crawler (получения контента с веба)
+            </summary>
+        </member>
+        <member name="M:RT.Crawler.ICrawler.GetResponse(System.Net.WebRequest)">
+            <summary>
+            Получить ответ
+            </summary>
+            <param name="request">Запрос</param>
+            <returns>Ответ</returns>
+        </member>
+        <member name="M:RT.Crawler.WebCrawler.GetResponse(System.Net.WebRequest)">
+            <summary>
+            Получить ответ
+            </summary>
+            <param name="request">Запрос</param>
+            <returns>Ответ</returns>
+        </member>
+        <member name="M:RT.Crawler.WebCrawler.OnUriLogger(RT.Crawler.UriEventArgs)">
+            <summary>
+            Логирование запроса ссылки
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="E:RT.Crawler.WebCrawler.UriLogger">
+            <summary>
+            Событие запроса Uri
+            </summary>
+        </member>
+    </members>
+</doc>
