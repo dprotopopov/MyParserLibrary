@@ -1,5 +1,0 @@
-D:\Projects\MyParserLibrary\TidyManaged-master\bin\Debug\TidyManaged.dll
-D:\Projects\MyParserLibrary\TidyManaged-master\bin\Debug\TidyManaged.pdb
-D:\Projects\MyParserLibrary\TidyManaged-master\obj\Debug\TidyManaged.dll
-D:\Projects\MyParserLibrary\TidyManaged-master\obj\Debug\TidyManaged.pdb
-D:\Projects\MyParserLibrary\TidyManaged-master\obj\Debug\TidyManaged.csprojResolveAssemblyReference.cache

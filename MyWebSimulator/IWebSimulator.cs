@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Reflection;
-using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using HtmlAgilityPack;
 using Jint;
-using MyParser.Library;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+using MyParser.WebTasks;
 
 namespace MyWebSimulator
 {
@@ -33,7 +31,7 @@ namespace MyWebSimulator
 
         void Sleep(int millisecondsTimeout);
         bool AttachForegroundWindowThreadInput(bool fAttach);
-        void webBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e);
+        void DocumentLoadCompleted(params object[] parameters);
         void SetWebBrowserFormFocus();
         bool SetWebBrowserControlFocus();
         bool SetForegroundCurrentProcessMainWindow();
@@ -43,12 +41,12 @@ namespace MyWebSimulator
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        List<IWebElement> GetElementByNode(List<HtmlNode> nodes);
+        IEnumerable<IWebElement> GetElementByNode(IEnumerable<HtmlNode> nodes);
 
-        List<HtmlNode> GetNodeByElement(List<IWebElement> elements);
+        HtmlNode[] GetNodeByElement(IEnumerable<IWebElement> elements);
         void HighlightElement(IWebElement webElement, bool highlight, bool scrollToElement);
-        object SimulateTextEntry(IWebElement webElement, List<object> parameters);
-        object SimulateEvent(EventInfo eventInfo, IWebElement webElement, List<object> parameters);
+        object SimulateTextEntry(IWebElement webElement, IEnumerable<object> parameters);
+        object SimulateEvent(EventInfo eventInfo, IWebElement webElement, IEnumerable<object> parameters);
         void ScrollToElement(IWebElement webElement);
         object RunScript();
 
@@ -67,14 +65,14 @@ namespace MyWebSimulator
 
         #region
 
-        object[] Focus(string xpath);
-        object[] Click(string xpath);
-        object[] DoubleClick(string xpath);
-        object[] KeyDown(string xpath, VirtualKeyCode code);
-        object[] KeyPress(string xpath, VirtualKeyCode code);
-        object[] KeyUp(string xpath, VirtualKeyCode code);
-        object[] TextEntry(string xpath, string text);
-        object[] Select(string xpath);
+        object[] Focus(params object[] arguments);
+        object[] Click(params object[] arguments);
+        object[] DoubleClick(params object[] arguments);
+        object[] KeyDown(params object[] arguments);
+        object[] KeyPress(params object[] arguments);
+        object[] KeyUp(params object[] arguments);
+        object[] TextEntry(params object[] arguments);
+        object[] Select(params object[] arguments);
 
         #endregion
     }

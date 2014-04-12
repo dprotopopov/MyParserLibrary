@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MyWebSimulatorForm));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer7 = new System.Windows.Forms.SplitContainer();
             this.propertyGridControlWorkspace = new DevExpress.XtraVerticalGrid.PropertyGridControl();
@@ -50,7 +51,7 @@
             this.splitContainer6 = new System.Windows.Forms.SplitContainer();
             this.listBoxNodes = new System.Windows.Forms.ListBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.webBrowser = new System.Windows.Forms.WebBrowser();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.listBoxElements = new System.Windows.Forms.ListBox();
             this.splitContainer5 = new System.Windows.Forms.SplitContainer();
             this.propertyGridControlHtmlNode = new DevExpress.XtraVerticalGrid.PropertyGridControl();
@@ -339,7 +340,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.webBrowser);
+            this.splitContainer2.Panel1.Controls.Add(this.panel1);
             this.splitContainer2.Panel1MinSize = 480;
             // 
             // splitContainer2.Panel2
@@ -349,15 +350,13 @@
             this.splitContainer2.SplitterDistance = 505;
             this.splitContainer2.TabIndex = 0;
             // 
-            // webBrowser
+            // panel1
             // 
-            this.webBrowser.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser.Location = new System.Drawing.Point(0, 0);
-            this.webBrowser.MinimumSize = new System.Drawing.Size(18, 20);
-            this.webBrowser.Name = "webBrowser";
-            this.webBrowser.Size = new System.Drawing.Size(505, 181);
-            this.webBrowser.TabIndex = 4;
-            this.webBrowser.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowser1_DocumentCompleted);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(505, 181);
+            this.panel1.TabIndex = 0;
             // 
             // listBoxElements
             // 
@@ -448,14 +447,18 @@
             // barButtonItem1
             // 
             this.barButtonItem1.Caption = "Загрузить страницу";
+            this.barButtonItem1.Glyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem1.Glyph")));
             this.barButtonItem1.Id = 1;
+            this.barButtonItem1.LargeGlyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem1.LargeGlyph")));
             this.barButtonItem1.Name = "barButtonItem1";
             this.barButtonItem1.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem1_ItemClick);
             // 
             // barButtonItem2
             // 
             this.barButtonItem2.Caption = "Выбрать элементы";
+            this.barButtonItem2.Glyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem2.Glyph")));
             this.barButtonItem2.Id = 2;
+            this.barButtonItem2.LargeGlyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem2.LargeGlyph")));
             this.barButtonItem2.Name = "barButtonItem2";
             this.barButtonItem2.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.barButtonItem2_ItemClick);
             // 
@@ -463,6 +466,7 @@
             // 
             this.barButtonItem3.Caption = "Симулировать событие элемента";
             this.barButtonItem3.Id = 3;
+            this.barButtonItem3.LargeGlyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem3.LargeGlyph")));
             this.barButtonItem3.Name = "barButtonItem3";
             this.barButtonItem3.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.SimulateEvent_ItemClick);
             // 
@@ -470,6 +474,7 @@
             // 
             this.barButtonItem4.Caption = "Симулировать ввод текста";
             this.barButtonItem4.Id = 4;
+            this.barButtonItem4.LargeGlyph = ((System.Drawing.Image)(resources.GetObject("barButtonItem4.LargeGlyph")));
             this.barButtonItem4.Name = "barButtonItem4";
             this.barButtonItem4.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.SimulateTextEntry_ItemClick);
             // 
@@ -508,6 +513,8 @@
             this.Ribbon = this.ribbonControl1;
             this.StatusBar = this.ribbonStatusBar1;
             this.Text = "My Web Simulator";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MyWebSimulatorForm_FormClosed);
+            this.Load += new System.EventHandler(this.MyWebSimulatorForm_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -568,7 +575,6 @@
         private DevExpress.XtraBars.BarButtonItem barButtonItem3;
         private System.Windows.Forms.ListBox listBoxNodes;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.WebBrowser webBrowser;
         private System.Windows.Forms.ListBox listBoxElements;
         private DevExpress.XtraBars.BarButtonItem barButtonItem4;
         private System.Windows.Forms.SplitContainer splitContainer3;
@@ -591,6 +597,7 @@
         private DevExpress.XtraVerticalGrid.Rows.EditorRow KeyboardMethodInfo;
         private System.Windows.Forms.ListBox listBoxWindows;
         private DevExpress.XtraVerticalGrid.Rows.EditorRow TextEntry;
+        private System.Windows.Forms.Panel panel1;
     }
 }
 

@@ -1,24 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="MyEmailExtractor" Label="MyEmailExtractor" Category="Проект" />
-    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
-    <Node Id="MyIrrParser" Label="MyIrrParser" Category="Проект" />
-    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
-    <Node Id="MyWebSimulator" Label="MyWebSimulator" Category="Проект" />
-    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
-    <Node Id="MyParserLibrary" Label="MyParserLibrary" Category="Проект" />
+    <Node Id="MyParser.WebView" Label="MyParser.WebView" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
     <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
     <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
-    <Node Id="Noesis.Javascript 0.7.1.0" Label="Noesis.Javascript 0.7.1.0" Category="Пакет" />
+    <Node Id="MyWebSimulator" Label="MyWebSimulator" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
+    <Node Id="MyParser.Managed" Label="MyParser.Managed" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
+    <Node Id="MyParser.Library" Label="MyParser.Library" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
+    <Node Id="MyWebSimulator.Application" Label="MyWebSimulator.Application" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
+    <Node Id="MyEmailExtractor" Label="MyEmailExtractor" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
+    <Node Id="MyIrrParser" Label="MyIrrParser" Category="Проект" />
+    <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Пакет" />
+    <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Пакет" />
+    <Node Id="InputSimulator 1.0.4.0" Label="InputSimulator 1.0.4.0" Category="Пакет" />
   </Nodes>
   <Links>
-    <Link Source="MyEmailExtractor" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
-    <Link Source="MyIrrParser" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyParser.WebView" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyParser.WebView" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyParser.WebView" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyWebSimulator" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
     <Link Source="MyWebSimulator" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
-    <Link Source="MyParserLibrary" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
-    <Link Source="MyParserLibrary" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
-    <Link Source="MyParserLibrary" Target="Noesis.Javascript 0.7.1.0" Category="Установленный пакет" />
+    <Link Source="MyWebSimulator" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyParser.Managed" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyParser.Managed" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyParser.Managed" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyParser.Library" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyParser.Library" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyParser.Library" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyWebSimulator.Application" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyWebSimulator.Application" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyWebSimulator.Application" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyEmailExtractor" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyEmailExtractor" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyEmailExtractor" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
+    <Link Source="MyIrrParser" Target="Antlr 3.5.0.2" Category="Установленный пакет" />
+    <Link Source="MyIrrParser" Target="HtmlAgilityPack 1.4.6" Category="Установленный пакет" />
+    <Link Source="MyIrrParser" Target="InputSimulator 1.0.4.0" Category="Установленный пакет" />
   </Links>
   <Categories>
     <Category Id="Проект" />

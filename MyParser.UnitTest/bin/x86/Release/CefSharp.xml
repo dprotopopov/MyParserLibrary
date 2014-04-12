@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        "CefSharp"
+    </assembly>
+    <members>
+        <member name="T:CefSharp.RtzCountdownEvent">
+            <summary>Return-To-Zero latch, signals whenever count is zero</summary>
+        </member>
+        <member name="M:CefSharp.TypeUtils.ConvertFromCef(CefRefPtr&lt;CefV8Value&gt;)">
+            <summary>
+Converts a Chromium V8 value to a (managed) .NET object.
+</summary>
+            <param name="obj">The V8 value that should be converted.</param>
+            <returns>A corresponding .NET object.</returns>
+        </member>
+        <member name="M:CefSharp.TypeUtils.ConvertToCef(System.Object,System.Type)">
+            <summary>
+Converts a .NET object to an (unmanaged) Chromium V8 object.
+</summary>
+            <param name="obj">The .NET object that should be converted.</param>
+            <param name="type">The type of the source object. If this parameter is a null reference, the type will be determined
+automatically.</param>
+            <returns>A corresponding V8 value.</returns>
+        </member>
+        <member name="M:CefSharp.Cef.Shutdown">
+            <summary>
+Shuts down CefSharp and the underlying CEF infrastructure. This method is safe to call multiple times; it will only
+shut down CEF on the first calls (all following calls will be ignored).
+</summary>
+        </member>
+        <member name="M:CefSharp.IWebBrowser.EvaluateScript(System.String,System.Nullable`1{System.TimeSpan})">
+            <summary>
+Execute some JavaScript code in the context of this WebBrowser, and return the result of the evaluation.
+</summary>
+            <param name="script">The Javascript code that should be executed.</param>
+            <param name="timeout">The timeout after which the JavaScript code execution should be aborted.</param>
+        </member>
+        <member name="M:CefSharp.IWebBrowser.EvaluateScript(System.String)">
+            <summary>
+Execute some JavaScript code in the context of this WebBrowser, and return the result of the evaluation.
+</summary>
+            <param name="script">The JavaScript code that should be executed.</param>
+        </member>
+        <member name="M:CefSharp.IWebBrowser.ExecuteScriptAsync(System.String)">
+            <summary>
+Execute some JavaScript code in the context of this WebBrowser. As the method name implies, the script will be
+executed asynchronously, and the method therefore returns before the script has actually been executed.
+</summary>
+            <param name="script">The JavaScript code that should be executed.</param>
+        </member>
+        <member name="M:CefSharp.IWebBrowser.RegisterJsObject(System.String,System.Object)">
+            <summary>
+Registers a Javascript object in this specific browser instance.
+</summary>
+            <param name="name">The name of the object. (e.g. "foo", if you want the object to be accessible as window.foo).</param>
+            <param name="objectToBind">The object to be made accessible to Javascript.</param>
+        </member>
+        <member name="M:CefSharp.IWebBrowser.LoadHtml(System.String,System.String)">
+            <summary>
+Loads custom HTML content into the web browser.
+</summary>
+            <param name="html">The HTML content.</param>
+            <param name="url">The URL that will be treated as the address of the content.</param>
+        </member>
+        <member name="E:CefSharp.IWebBrowser.LoadError">
+            <summary>
+Event handler that will get called whenever a load error occurs.
+</summary>
+        </member>
+        <member name="E:CefSharp.IWebBrowser.LoadCompleted">
+            <summary>
+Event handler that will get called whenever page loading is complete.
+</summary>
+        </member>
+        <member name="E:CefSharp.IWebBrowser.ConsoleMessage">
+            <summary>
+Event handler for receiving Javascript console messages being sent from web pages.
+</summary>
+        </member>
+        <member name="T:CefSharp.LoadErrorEventHandler">
+            <summary>
+A delegate type used to listen to LoadError messages.
+</summary>
+            <param name="failedUrl">The URL that failed to load.</param>
+            <param name="errorCode">The error code.</param>
+            <param name="errorText">The error text.</param>
+        </member>
+        <member name="T:CefSharp.LoadCompletedEventHandler">
+            <summary>
+A delegate type used to listen to LoadCompleted events.
+</summary>
+        </member>
+        <member name="P:CefSharp.LoadCompletedEventArgs.Url">
+            <summary>
+The URL that was loaded.
+</summary>
+        </member>
+        <member name="T:CefSharp.LoadCompletedEventArgs">
+            <summary>
+Event arguments to the LoadCompleted event handler set up in IWebBrowser.
+</summary>
+        </member>
+        <member name="T:CefSharp.ConsoleMessageEventHandler">
+            <summary>
+A delegate type used to listen to ConsoleMessage events.
+</summary>
+        </member>
+        <member name="P:CefSharp.ConsoleMessageEventArgs.Line">
+            <summary>
+The line number that generated the console message.
+</summary>
+        </member>
+        <member name="P:CefSharp.ConsoleMessageEventArgs.Source">
+            <summary>
+The source of the console message.
+</summary>
+        </member>
+        <member name="P:CefSharp.ConsoleMessageEventArgs.Message">
+            <summary>
+The message text of the console message.
+</summary>
+        </member>
+        <member name="T:CefSharp.ConsoleMessageEventArgs">
+            <summary>
+Event arguments to the ConsoleMessage event handler set up in IWebBrowser.
+</summary>
+        </member>
+        <member name="T:CefSharp.CefErrorCode">
+            <summary>
+Lists some of the error codes that can be reported by CEF.
+</summary>
+        </member>
+        <member name="F:CefSharp.CefErrorCode.Aborted">
+            <summary>
+A request was aborted, possibly by the user.
+</summary>
+        </member>
+        <member name="F:CefSharp.CefErrorCode.None">
+            <summary>
+No error occurred.
+</summary>
+        </member>
+        <member name="M:CefSharp.CefSettings.RegisterScheme(CefSharp.CefCustomScheme)">
+            <summary>
+Registers a custom scheme using the provided settings.
+</summary>
+            <param name="cefCustomScheme">The CefCustomScheme which provides the details about the scheme.</param>
+        </member>
+        <member name="M:CefSharp.Internals.StringUtils.AssignNativeFromClr(_cef_string_utf16_t*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.String)">
+            <summary>
+Assigns the provided cef_string_t object from the given .NET string.
+</summary>
+            <param name="cefStr">The cef_string_t that should be updated.</param>
+            <param name="str">The .NET string whose value should be used to update cefStr.</param>
+        </member>
+        <member name="M:CefSharp.Internals.StringUtils.ToNative(System.String)">
+            <summary>
+Converts a .NET string to native (unmanaged) format. Note that this method does not allocate a new copy of the
+</summary>
+            <param name="str">The string that should be converted.</param>
+            <returns>An unmanaged representation of the provided string, or an empty string if the input string is a nullptr.</returns>
+        </member>
+        <member name="M:CefSharp.Internals.StringUtils.ToClr(CefStringBase&lt;CefStringTraitsUTF16&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+            <summary>
+Converts an unmanaged string to a (managed) .NET string.
+</summary>
+            <param name="cefStr">The string that should be converted.</param>
+            <returns>A .NET string.</returns>
+        </member>
+        <member name="M:CefSharp.Internals.StringUtils.ToClr(_cef_string_utf16_t!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+            <summary>
+Converts an unmanaged string to a (managed) .NET string.
+</summary>
+            <param name="cefStr">The string that should be converted.</param>
+            <returns>A .NET string.</returns>
+        </member>
+        <member name="M:CefSharp.ISchemeHandler.ProcessRequestAsync(CefSharp.IRequest,CefSharp.SchemeHandlerResponse,CefSharp.OnRequestCompletedHandler)">
+            <summary>
+Processes a custom scheme-based request asynchronously. The implementing method should call the callback whenever the
+request is completed.
+</summary>
+            <param name="request">The request object.</param>
+            <param name="response">The SchemeHandlerResponse object in which the handler is supposed to place the response
+information.</param>
+            <param name="requestCompletedCallback">A callback which the handler is supposed to call once the processing is
+complete. The callback may be called on any thread.</param>
+            <returns>true if the request is handled, false otherwise.</returns>
+        </member>
+        <member name="M:CefSharp.IRequestResponse.RespondWith(System.IO.Stream,System.String)">
+respond with data from Stream
+</member>
+        <member name="M:CefSharp.IRequestResponse.Redirect(System.String)">
+respond with redirection to the provided URL
+</member>
+        <member name="P:CefSharp.IRequestResponse.Request">
+the current request
+</member>
+        <member name="M:CefSharp.IRequestResponse.Cancel">
+cancel the request, return nothing
+</member>
+        <member name="P:CefSharp.SchemeHandlerResponse.CloseStream">
+            <summary>
+Set to true to close the response stream once it has been read. The default value
+is false in order to preserve the old CefSharp behavior of not closing the stream.
+</summary>
+        </member>
+        <member name="P:CefSharp.SchemeHandlerResponse.RedirectUrl">
+            <summary>
+URL to redirect to (leave empty to not redirect).
+</summary>
+        </member>
+        <member name="P:CefSharp.SchemeHandlerResponse.ContentLength">
+            <summary>
+The length of the response contents. Defaults to -1, which means unknown length
+and causes CefSharp to read the response stream in pieces. Thus, setting a length
+is optional but allows for more optimal response reading.
+</summary>
+        </member>
+        <member name="P:CefSharp.SchemeHandlerResponse.StatusCode">
+            <summary>
+The status code of the response. Unless set, the default value used is 200
+(corresponding to HTTP status OK).
+</summary>
+        </member>
+        <member name="P:CefSharp.SchemeHandlerResponse.ResponseStream">
+            <summary>
+A Stream with the response data. If the request didn't return any response, leave this property as null.
+</summary>
+        </member>
+    </members>
+</doc>

@@ -1,5 +1,0 @@
-D:\Projects\MyParserLibrary\MyWebCrawler\bin\Debug\MyWebCrawler.dll
-D:\Projects\MyParserLibrary\MyWebCrawler\bin\Debug\MyWebCrawler.pdb
-D:\Projects\MyParserLibrary\MyWebCrawler\obj\Debug\MyWebCrawler.csprojResolveAssemblyReference.cache
-D:\Projects\MyParserLibrary\MyWebCrawler\obj\Debug\MyWebCrawler.dll
-D:\Projects\MyParserLibrary\MyWebCrawler\obj\Debug\MyWebCrawler.pdb

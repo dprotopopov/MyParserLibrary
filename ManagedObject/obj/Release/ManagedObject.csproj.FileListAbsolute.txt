@@ -1,4 +1,0 @@
-D:\Projects\MyParserLibrary\ManagedObject\bin\Release\ManagedObject.dll
-D:\Projects\MyParserLibrary\ManagedObject\bin\Release\ManagedObject.pdb
-D:\Projects\MyParserLibrary\ManagedObject\obj\Release\ManagedObject.dll
-D:\Projects\MyParserLibrary\ManagedObject\obj\Release\ManagedObject.pdb

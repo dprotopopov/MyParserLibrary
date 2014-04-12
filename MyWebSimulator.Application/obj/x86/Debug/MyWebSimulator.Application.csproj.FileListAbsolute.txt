@@ -1,0 +1,6 @@
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\obj\x86\Debug\MyWebSimulator.Application.csprojResolveAssemblyReference.cache
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\obj\x86\Debug\MyWebSimulator.Application.MyWebSimulatorForm.resources
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\obj\x86\Debug\MyWebSimulator.Application.Properties.Resources.resources
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\obj\x86\Debug\MyWebSimulator.Application.csproj.GenerateResource.Cache
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\obj\x86\Debug\MyWebSimulator.Application.exe.licenses
+D:\Projects\MyParserLibrary\MyWebSimulator.Application\bin\x86\Debug\MyWebSimulator.Application.exe.config

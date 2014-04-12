@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9E1DB17A-A1E7-416B-B080-0D78BC926816}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MyParser</RootNamespace>
+    <AssemblyName>MyParser</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MyParser.Library.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\..\IhrStandort\packages\EntityFramework.6.0.0\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\..\IhrStandort\packages\EntityFramework.6.0.0\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\RealtyParser\packages\HtmlAgilityPack.1.4.6\lib\Net40\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>..\..\IhrStandort\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\IhrStandort\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite">
+      <HintPath>..\..\IhrStandort\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.SqliteNET">
+      <HintPath>..\..\IhrStandort\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\IhrStandort\packages\ServiceStack.Text.4.0.15\lib\net40\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.92.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6">
+      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.92.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Builder.cs" />
+    <Compile Include="BuilderInfo.cs" />
+    <Compile Include="BuilderInfos.cs" />
+    <Compile Include="Comparer\AscComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Comparer\DatetimeFirstIdSecondComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Comparer\DescComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Comparer\IPublicationComparer.cs" />
+    <Compile Include="Comparer\OnlyDatetimeComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Comparer\OnlyDigitsDecimalComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Comparer\ResourceComparer.cs" />
+    <Compile Include="Compression\DeflateStream.cs" />
+    <Compile Include="Compression\GZipStream.cs" />
+    <Compile Include="Compression\ICompression.cs" />
+    <Compile Include="Compression\NoCompression.cs" />
+    <Compile Include="Converter.cs" />
+    <Compile Include="Crawler.cs" />
+    <Compile Include="Database.cs" />
+    <Compile Include="DocumentEdition.cs" />
+    <Compile Include="ICrawler.cs" />
+    <Compile Include="IDatabase.cs" />
+    <Compile Include="IParser.cs" />
+    <Compile Include="ISessionManager.cs" />
+    <Compile Include="ITaskManager.cs" />
+    <Compile Include="ItemView\EmailView.cs" />
+    <Compile Include="ItemView\WebSessionView.cs" />
+    <Compile Include="ItemView\WebTaskView.cs" />
+    <Compile Include="IValueable.cs" />
+    <Compile Include="Link.cs" />
+    <Compile Include="LinkComparer.cs" />
+    <Compile Include="Managers\ComparerManager.cs" />
+    <Compile Include="Managers\CompressionManager.cs" />
+    <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="Proxy.cs" />
+    <Compile Include="ProxyTasks\HidemyAssProxyListTask.cs" />
+    <Compile Include="ProxyTasks\ProxyListTask.cs" />
+    <Compile Include="ProxyTasks\SocksProxyNetTask.cs" />
+    <Compile Include="Record.cs" />
+    <Compile Include="RequestProperties.cs" />
+    <Compile Include="Resource.cs" />
+    <Compile Include="SessionManager.cs" />
+    <Compile Include="SiteProperties.cs" />
+    <Compile Include="TaskManager.cs" />
+    <Compile Include="Values.cs" />
+    <Compile Include="Defaults.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="ReturnFieldInfo.cs" />
+    <Compile Include="ReturnFieldInfos.cs" />
+    <Compile Include="ReturnFields.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="WebSessions\IWebSession.cs" />
+    <Compile Include="WebSessions\WebSession.cs" />
+    <Compile Include="WebSessions\WebSessionCallback.cs" />
+    <Compile Include="WebSessions\WebSessionStatus.cs" />
+    <Compile Include="WebTasks\IWebDictionaryQuery.cs" />
+    <Compile Include="WebTasks\IWebPublicationLookup.cs" />
+    <Compile Include="WebTasks\IWebQuery.cs" />
+    <Compile Include="WebTasks\IWebSearchLookup.cs" />
+    <Compile Include="WebTasks\IWebTask.cs" />
+    <Compile Include="WebTasks\WebDictionaryQuery.cs" />
+    <Compile Include="WebTasks\WebPublicationLookup.cs" />
+    <Compile Include="WebTasks\WebQuery.cs" />
+    <Compile Include="WebTasks\WebQueryCallback.cs" />
+    <Compile Include="WebTasks\WebSearchLookup.cs" />
+    <Compile Include="WebTasks\WebTask.cs" />
+    <Compile Include="WebTasks\WebTaskCallback.cs" />
+    <Compile Include="WebTasks\WebTaskStatus.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="MyParser.Library.snk" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fakes\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Canceled.png" />
+    <EmbeddedResource Include="Error.png" />
+    <EmbeddedResource Include="Finished.png" />
+    <EmbeddedResource Include="Email.png" />
+    <Content Include="libtidy.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Paused.png" />
+    <EmbeddedResource Include="Ready.png" />
+    <EmbeddedResource Include="Running.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MyLibrary\MyLibrary\MyLibrary.csproj">
+      <Project>{e80cf993-5e07-4875-85fe-a2adcf76558d}</Project>
+      <Name>MyLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Projects\TidyManaged-master\TidyManaged.csproj">
+      <Project>{d799633d-00ef-437c-b158-315557d930fc}</Project>
+      <Name>TidyManaged</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,4 @@
+D:\Projects\MyParserLibrary\WebView.Evaluate\obj\x86\Debug\WebView.Evaluate.WebViewEvaluate.resources
+D:\Projects\MyParserLibrary\WebView.Evaluate\obj\x86\Debug\WebView.Evaluate.Properties.Resources.resources
+D:\Projects\MyParserLibrary\WebView.Evaluate\obj\x86\Debug\WebView.Evaluate.csproj.GenerateResource.Cache
+D:\Projects\MyParserLibrary\WebView.Evaluate\obj\x86\Debug\WebView.Evaluate.exe.licenses

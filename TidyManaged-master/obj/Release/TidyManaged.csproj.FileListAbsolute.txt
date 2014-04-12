@@ -1,3 +1,0 @@
-D:\Projects\MyParserLibrary\TidyManaged-master\bin\Release\TidyManaged.xml
-D:\Projects\MyParserLibrary\TidyManaged-master\bin\Release\TidyManaged.dll
-D:\Projects\MyParserLibrary\TidyManaged-master\obj\Release\TidyManaged.dll

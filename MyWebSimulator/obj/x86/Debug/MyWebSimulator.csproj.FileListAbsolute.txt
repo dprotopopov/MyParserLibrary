@@ -1,0 +1,3 @@
+D:\Projects\MyParserLibrary\MyWebSimulator\obj\x86\Debug\MyWebSimulator.csprojResolveAssemblyReference.cache
+D:\Projects\MyParserLibrary\MyWebSimulator\obj\x86\Debug\MyWebSimulator.Properties.Resources.resources
+D:\Projects\MyParserLibrary\MyWebSimulator\obj\x86\Debug\MyWebSimulator.csproj.GenerateResource.Cache

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -7,41 +8,46 @@ using WindowsInput.Native;
 using DevExpress.XtraBars;
 using DevExpress.XtraBars.Ribbon;
 using HtmlAgilityPack;
-using ManagedObject;
-using MyParser.Library;
-using MyParser.Managed;
+using MyLibrary;
+using MyLibrary.LastError;
+using MyLibrary.ManagedObject;
+using MyWebSimulator.Managed;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace MyWebSimulator.Application
 {
     public partial class MyWebSimulatorForm : RibbonForm
     {
+        private readonly CefSharp.WinForms.WebView _webView;
+
         public MyWebSimulatorForm()
         {
             InitializeComponent();
-            WebSimulator = new WebSimulator {WebBrowser = new ManagedWebBrowser(webBrowser)};
-            foreach (EventInfo item in WebSimulator.ElementEvents.Keys)
+            _webView = new CefSharp.WinForms.WebView(@"http://protopopov.ru")
             {
-                repositoryItemComboBoxElementEventInfo.Items.Add(item);
-            }
-            foreach (MethodInfo item in WebSimulator.SimulatorMethodInfos.Keys)
-            {
-                repositoryItemComboBoxSimulatorMethodInfo.Items.Add(item);
-            }
-            foreach (MethodInfo item in WebSimulator.MouseMethods.Keys)
-            {
-                repositoryItemComboBoxMouseMethodInfo.Items.Add(item);
-            }
-            foreach (MethodInfo item in WebSimulator.KeyboardMethods.Keys)
-            {
-                repositoryItemComboBoxKeyboardMethodInfo.Items.Add(item);
-            }
+                Dock = DockStyle.Fill,
+                MenuHandler = new MenuHandler(),
+            };
+            panel1.Controls.Add(_webView);
+
+            WebSimulator = new WebSimulator {WebBrowser = new ManagedWebBrowser(_webView)};
+            _webView.LoadCompleted += (sender, url) => WebSimulator.DocumentLoadCompleted(sender, url);
+            _webView.LoadCompleted += (sender, url) => DocumentLoadCompleted(sender, url);
+
             Workspace = new MyWebSimulatorFormWorkspace();
+
+            repositoryItemComboBoxElementEventInfo.Items.AddRange(
+                WebSimulator.ElementEvents.Keys.Cast<object>().ToArray());
+            repositoryItemComboBoxSimulatorMethodInfo.Items.AddRange(
+                WebSimulator.SimulatorMethodInfos.Keys.Cast<object>().ToArray());
+            repositoryItemComboBoxMouseMethodInfo.Items.AddRange(
+                WebSimulator.MouseMethods.Keys.Cast<object>().ToArray());
+            repositoryItemComboBoxKeyboardMethodInfo.Items.AddRange(
+                WebSimulator.KeyboardMethods.Keys.Cast<object>().ToArray());
             propertyGridControlWorkspace.SelectedObject = Workspace;
-            RefreshControls();
         }
 
-        public MyWebSimulatorFormWorkspace Workspace { get; set; }
+        private MyWebSimulatorFormWorkspace Workspace { get; set; }
 
         private WebSimulator WebSimulator { get; set; }
 
@@ -51,14 +57,18 @@ namespace MyWebSimulator.Application
             propertyGridControlHtmlElement.Refresh();
             propertyGridControlWorkspace.Refresh();
             propertyGridControlWindow.Refresh();
+            _webView.Refresh();
         }
 
         private void ClearControls(int level)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.WriteLine("level = " + level);
             if (level <= 0)
             {
                 listBoxWindows.Items.Clear();
                 listBoxWindows.SelectedItem = null;
+                WebSimulator.HighlightedElement = null;
             }
             if (level <= 1)
             {
@@ -80,99 +90,129 @@ namespace MyWebSimulator.Application
                 propertyGridControlHtmlElement.SelectedObject = null;
                 WebSimulator.HighlightElement(WebSimulator.HighlightedElement, false, false);
             }
+            WebSimulator.HighlightedElement = null;
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void FillControls(int level)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.WriteLine("level = " + level);
             if (level == 0)
             {
-                foreach (var item in WebSimulator.Windows(WebSimulator.TopmostWindow))
-                {
-                    listBoxWindows.Items.Add(item);
-                }
+                listBoxWindows.Items.AddRange(WebSimulator.Windows(WebSimulator.TopmostWindow).Cast<object>().ToArray());
             }
             if (level <= 1)
             {
                 HtmlDocument document = WebSimulator.HtmlDocument;
-                foreach (HtmlNode node in document.DocumentNode.SelectNodes(@"//*"))
+                try
                 {
-                    try
-                    {
-                        listBoxNodes.Items.Add(new KeyValuePair<string, HtmlNode>(node.OuterHtml, node));
-                    }
-                    catch (Exception exception)
-                    {
-                        Workspace.LastError = exception;
-                    }
+                    listBoxNodes.Items.AddRange(
+                        document.DocumentNode.SelectNodes(@"//*")
+                            .Select(node => new KeyValuePair<string, HtmlNode>(node.OuterHtml, node))
+                            .Cast<object>()
+                            .ToArray());
                 }
-                foreach (IWebElement element in WebSimulator.WebDocument.All)
+                catch (Exception exception)
                 {
-                    try
-                    {
-                        listBoxElements.Items.Add(new KeyValuePair<string, IWebElement>(element.OuterHtml, element));
-                    }
-                    catch (Exception exception)
-                    {
-                        Workspace.LastError = exception;
-                    }
+                    Workspace.LastError = exception;
+                }
+                try
+                {
+                    listBoxElements.Items.AddRange(
+                        WebSimulator.WebDocument.All.Select(
+                            element => new KeyValuePair<string, IWebElement>(element.OuterHtml, element))
+                            .Cast<object>()
+                            .ToArray());
+                }
+                catch (Exception exception)
+                {
+                    Workspace.LastError = exception;
                 }
             }
             if (level == 2)
             {
                 HtmlDocument document = WebSimulator.HtmlDocument;
-                List<HtmlNode> nodeList = document.DocumentNode.SelectNodes(Workspace.Xpath).ToList();
-                List<IWebElement> elementList = WebSimulator.GetElementByNode(nodeList);
-                foreach (HtmlNode node in nodeList)
+                HtmlNode[] htmlNodes = document.DocumentNode.SelectNodes(Workspace.Xpath).ToArray();
+                IEnumerable<IWebElement> webElements = WebSimulator.GetElementByNode(htmlNodes);
+                try
                 {
-                    try
-                    {
-                        listBoxNodes.Items.Add(new KeyValuePair<string, HtmlNode>(node.OuterHtml, node));
-                    }
-                    catch (Exception exception)
-                    {
-                        Workspace.LastError = exception;
-                    }
+                    listBoxNodes.Items.AddRange(
+                        htmlNodes.Select(node => new KeyValuePair<string, HtmlNode>(node.OuterHtml, node))
+                            .Cast<object>()
+                            .ToArray());
                 }
-                foreach (IWebElement element in elementList)
+                catch (Exception exception)
                 {
-                    try
-                    {
-                        listBoxElements.Items.Add(new KeyValuePair<string, IWebElement>(element.OuterHtml, element));
-                    }
-                    catch (Exception exception)
-                    {
-                        Workspace.LastError = exception;
-                    }
+                    Workspace.LastError = exception;
+                }
+                try
+                {
+                    listBoxElements.Items.AddRange(
+                        webElements.Select(element => new KeyValuePair<string, IWebElement>(element.OuterHtml, element))
+                            .Cast<object>()
+                            .ToArray());
+                }
+                catch (Exception exception)
+                {
+                    Workspace.LastError = exception;
                 }
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
-        private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        private void DocumentLoadCompleted(params object[] parameters)
         {
-            try
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            if (propertyGridControlWorkspace.InvokeRequired
+                || propertyGridControlWindow.InvokeRequired
+                || propertyGridControlHtmlNode.InvokeRequired
+                || propertyGridControlHtmlElement.InvokeRequired
+                || listBoxWindows.InvokeRequired
+                || listBoxNodes.InvokeRequired
+                || listBoxElements.InvokeRequired
+                )
             {
-                Workspace.Url = WebSimulator.ToString();
-
-                ClearControls(0);
-                WebSimulator.Window = WebSimulator.TopmostWindow;
-                if (WebSimulator.TopmostWindow is IManagedObject)
-                    propertyGridControlWindow.SelectedObject =
-                        (WebSimulator.TopmostWindow as IManagedObject).ObjectInstance;
-                else
-                    propertyGridControlWindow.SelectedObject = WebSimulator.TopmostWindow;
-                FillControls(0);
-
-                Workspace.LastError = WebSimulator.LastError;
+                try
+                {
+                    DocumentLoadCompletedDelegate d = DocumentLoadCompleted;
+                    object[] objects = {parameters};
+                    Debug.WriteLine("Invoke {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                    Invoke(d, objects);
+                }
+                catch (Exception exception)
+                {
+                    Workspace.LastError = exception;
+                }
             }
-            catch (Exception exception)
+            else
             {
-                Workspace.LastError = exception;
+                try
+                {
+                    Workspace.Url = WebSimulator.ToString();
+
+                    ClearControls(0);
+                    if (WebSimulator.TopmostWindow is IManagedObject)
+                        propertyGridControlWindow.SelectedObject =
+                            (WebSimulator.TopmostWindow as IManagedObject).ObjectInstance;
+                    else
+                        propertyGridControlWindow.SelectedObject = WebSimulator.TopmostWindow;
+                    FillControls(0);
+
+                    Workspace.LastError = WebSimulator.LastError;
+                }
+                catch (Exception exception)
+                {
+                    Workspace.LastError = exception;
+                }
+                RefreshControls();
             }
-            RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void listBoxNodes_SelectedChanged(object sender, EventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ClearControls(3);
@@ -181,9 +221,9 @@ namespace MyWebSimulator.Application
                 {
                     var itemNode = (KeyValuePair<string, HtmlNode>) listBoxNodes.SelectedItem;
                     propertyGridControlHtmlNode.SelectedObject = itemNode.Value;
-                    Workspace.Xpath = MyLibrary.XPathSanitize(itemNode.Value.XPath);
+                    Workspace.Xpath = XPath.Sanitize(itemNode.Value.XPath);
                     IWebElement element =
-                        WebSimulator.GetElementByNode(new List<HtmlNode>
+                        WebSimulator.GetElementByNode(new[]
                         {
                             itemNode.Value
                         })
@@ -206,10 +246,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void listBoxElements_SelectedChanged(object sender, EventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ClearControls(4);
@@ -232,10 +274,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void barButtonItem1_ItemClick(object sender, ItemClickEventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 repositoryItemComboBoxUrl.Items.Add(Workspace.Url);
@@ -247,10 +291,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void barButtonItem2_ItemClick(object sender, ItemClickEventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ClearControls(2);
@@ -262,10 +308,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void SimulateEvent_ItemClick(object sender, ItemClickEventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 EventInfo eventInfo = Workspace.ElementEventInfo;
@@ -284,10 +332,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void SimulateTextEntry_ItemClick(object sender, ItemClickEventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 IWebElement htmlElement = ((KeyValuePair<string, IWebElement>) listBoxElements.SelectedItem).Value;
@@ -300,10 +350,12 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         private void listBoxWindows_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             try
             {
                 ClearControls(1);
@@ -325,9 +377,24 @@ namespace MyWebSimulator.Application
                 Workspace.LastError = exception;
             }
             RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
-        public class MyWebSimulatorFormWorkspace : ILastError
+        private void MyWebSimulatorForm_Load(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            RefreshControls();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+        }
+
+        private void MyWebSimulatorForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            panel1.Controls.Clear();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+        }
+
+        private class MyWebSimulatorFormWorkspace : ILastError
         {
             public string Url { get; set; }
             public string Xpath { get; set; }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -12,13 +13,17 @@ using WindowsInput;
 using WindowsInput.Native;
 using HtmlAgilityPack;
 using Jint;
-using MyParser.Library;
-using MyParser.Managed;
+using MyLibrary;
+using MyLibrary.Collections;
+using MyParser.WebTasks;
+using MyWebSimulator.Managed;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+using String = MyLibrary.Types.String;
+using Values = MyParser.Values;
 
 namespace MyWebSimulator
 {
-    public sealed class WebSimulator : WebTask, IWebSimulator
+    public class WebSimulator : WebTask, IWebSimulator
     {
         public WebSimulator()
         {
@@ -35,46 +40,53 @@ namespace MyWebSimulator
 
         public IWebWindow TopmostWindow
         {
-            get { return WebBrowser.Document.Window; }
+            get
+            {
+                Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                IWebWindow value = WebBrowser.Document.Window;
+                Debug.WriteLine("value = " + String.IntroText(value.ToString()));
+                Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return value;
+            }
         }
 
         public IWebWindow Window { get; set; }
 
         public Dictionary<IWebWindow, string> Windows(IWebWindow window)
         {
-            Debug.Assert(!window.IsNullOrEmpty());
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(window != null && !window.IsNullOrEmpty());
 
             var dictionary = new Dictionary<IWebWindow, string>();
-            var stack = new Stack<KeyValuePair<IWebWindow, string>>();
-            stack.Push(new KeyValuePair<IWebWindow, string>(window, ""));
-            while (stack.Any())
+            var queue = new Queue<KeyValuePair<IWebWindow, string>>();
+            queue.Enqueue(new KeyValuePair<IWebWindow, string>(window, ""));
+            do
             {
-                try
+                KeyValuePair<IWebWindow, string> item = queue.Dequeue();
+                window = item.Key;
+                string xpath = item.Value;
+                Debug.Assert(window != null && !window.IsNullOrEmpty());
+                dictionary.Add(window, xpath);
+                IWebWindow[] frames = window.Frames;
+                foreach (IWebWindow frame in frames)
                 {
-                    KeyValuePair<IWebWindow, string> item = stack.Pop();
-                    string xpath = item.Value;
-                    if (!item.Key.WindowFrameElement.IsNullOrEmpty())
-                    {
-                        xpath += item.Key.WindowFrameElement.XPath;
-                    }
-                    dictionary.Add(item.Key, xpath);
-                    if (item.Key.Frames != null)
-                        foreach (IWebWindow child in item.Key.Frames.Reverse())
-                        {
-                            stack.Push(new KeyValuePair<IWebWindow, string>(child, xpath));
-                        }
+                    queue.Enqueue(new KeyValuePair<IWebWindow, string>(frame, xpath + frame.WindowFrameElement.XPath));
                 }
-                catch (Exception exception)
-                {
-                    LastError = exception;
-                }
-            }
+            } while (queue.Any());
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             return dictionary;
         }
 
         public IWebDocument WebDocument
         {
-            get { return Window.Document; }
+            get
+            {
+                Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                IWebDocument value = Window.Document;
+                Debug.WriteLine("value = " + String.IntroText(value.ToString()));
+                Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return value;
+            }
         }
 
         public IWebSimulator Simulator { get; set; }
@@ -96,10 +108,12 @@ namespace MyWebSimulator
         {
             get
             {
+                Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
                 var document = new HtmlDocument();
-                if (WebDocument.Body != null && !WebDocument.Body.IsNullOrEmpty())
-                    if (WebDocument.Body.Parent != null && !WebDocument.Body.Parent.IsNullOrEmpty())
-                        document.LoadHtml(WebDocument.Body.Parent.OuterHtml);
+                IWebElement rootElement = WebDocument.RootElement;
+                if (rootElement != null && !rootElement.IsNullOrEmpty())
+                    document.LoadHtml(rootElement.OuterHtml);
+                Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return document;
             }
         }
@@ -169,31 +183,33 @@ namespace MyWebSimulator
             Debug.Assert(This != null, "This != null");
             try
             {
-                ParametersValues parametersValues = MyLibrary.BuildParametersValues(This.Url, This);
-                string url = MyLibrary.ParseRowTemplate(Url, parametersValues);
+                string url = This.Transformation.ParseRowTemplate(This.Url, This.ToValues());
+                var values = new Values
+                {
+                    Url = new StackListQueue<string> {url}
+                };
                 This.WebBrowser.Navigate(url);
                 This.RunScript();
-                HtmlDocument[] docs = {This.HtmlDocument};
-                var returnFields = new ReturnFields();
-                HtmlNode[] nodes = docs.Select(doc => doc.DocumentNode).ToArray();
-
-                returnFields.InsertOrAppend(MyLibrary.BuildReturnFields(nodes, parametersValues,
-                    This.ReturnFieldInfos));
-                This.ReturnFields = returnFields;
+                IEnumerable<HtmlDocument> docs = new StackListQueue<HtmlDocument>(This.HtmlDocument);
+                This.ReturnFields = This.Parser.BuildReturnFields(docs, values,
+                    This.ReturnFieldInfos);
                 This.Status = WebTaskStatus.Finished;
                 This.Thread = null;
                 if (This.OnCompliteCallback != null) This.OnCompliteCallback(This);
+                Thread.Sleep(0);
             }
             catch (Exception)
             {
                 This.Status = WebTaskStatus.Error;
                 This.Thread = null;
                 if (This.OnErrorCallback != null) This.OnErrorCallback(This);
+                Thread.Sleep(0);
             }
         }
 
         public bool AttachForegroundWindowThreadInput(bool fAttach)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Form form = WebBrowser.FindForm();
             IntPtr foregroundWindowHandle = GetForegroundWindow();
             if (form != null)
@@ -204,19 +220,24 @@ namespace MyWebSimulator
                 bool result = AttachThreadInput(foregroundThreadId, threadId, fAttach);
                 Debug.WriteLine("AttachForegroundWindowThreadInput foregroundThreadId = " + foregroundThreadId +
                                 " threadId = " + threadId + " fAttach = " + fAttach + " result = " + result);
+                Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
                 return result;
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             return false;
         }
 
-        public void webBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        public void DocumentLoadCompleted(params object[] parameters)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Window = TopmostWindow;
             DocumentCompleted++;
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void SetWebBrowserFormFocus()
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Form form = WebBrowser.FindForm();
             if (form != null && Application.OpenForms[form.Name] == null)
             {
@@ -226,21 +247,26 @@ namespace MyWebSimulator
             {
                 if (form != null) Application.OpenForms[form.Name].Activate();
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public bool SetWebBrowserControlFocus()
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             bool result = WebBrowser.Focus();
             Debug.WriteLine("SetWebBrowserControlFocus WebBrowser.Handle = " + WebBrowser.Handle + " result = " + result);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             return result;
         }
 
         public bool SetForegroundCurrentProcessMainWindow()
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Process process = Process.GetCurrentProcess();
             bool result = SetForegroundWindow(process.MainWindowHandle);
             Debug.WriteLine("SetForegroundCurrentProcessMainWindow process.MainWindowHandle = " +
                             process.MainWindowHandle + " result = " + result);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             return result;
         }
 
@@ -249,25 +275,25 @@ namespace MyWebSimulator
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        public List<IWebElement> GetElementByNode(List<HtmlNode> nodes)
+        public IEnumerable<IWebElement> GetElementByNode(IEnumerable<HtmlNode> nodes)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             var elements = new List<IWebElement>();
 
-            var dictionaryNode = new Dictionary<HtmlNode, string>();
             var dictionaryElement = new Dictionary<IWebElement, string>();
             foreach (IWebElement item in WebDocument.All)
             {
-                string xpath = MyLibrary.XPathSanitize(item.XPath.ToLower());
+                string xpath = XPath.Sanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
             }
+            var dictionaryNode = new Dictionary<HtmlNode, string>();
             foreach (HtmlNode item in nodes)
             {
-                string xpath = new Regex(@"\B\/html\[\d+\]").Replace(
-                    MyLibrary.XPathSanitize(item.XPath.ToLower()), @"/");
+                string xpath = XPath.Sanitize(item.XPath.ToLower());
                 dictionaryNode.Add(item, xpath);
             }
 
-            foreach (var item in dictionaryNode.Select(node => MyLibrary.XPathToMask(node.Value))
+            foreach (var item in dictionaryNode.Select(node => XPath.ToRegexPattern(node.Value))
                 .SelectMany(mask => (from item in dictionaryElement
                     let matches = Regex.Matches(item.Value, mask)
                     where matches.Count == 1 && !elements.Contains(item.Key)
@@ -276,28 +302,29 @@ namespace MyWebSimulator
                 Debug.WriteLine(item.Value);
                 elements.Add(item.Key);
             }
-            return elements;
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return elements.ToArray();
         }
 
-        public List<HtmlNode> GetNodeByElement(List<IWebElement> elements)
+        public HtmlNode[] GetNodeByElement(IEnumerable<IWebElement> elements)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             var nodes = new List<HtmlNode>();
 
-            var dictionaryNode = new Dictionary<HtmlNode, string>();
             var dictionaryElement = new Dictionary<IWebElement, string>();
             foreach (IWebElement item in elements)
             {
-                string xpath = MyLibrary.XPathSanitize(item.XPath.ToLower());
+                string xpath = XPath.Sanitize(item.XPath.ToLower());
                 dictionaryElement.Add(item, xpath);
             }
-            foreach (HtmlNode item in HtmlDocument.DocumentNode.SelectNodes(@"//*").ToList())
+            var dictionaryNode = new Dictionary<HtmlNode, string>();
+            foreach (HtmlNode item in HtmlDocument.DocumentNode.SelectNodes(@"//*"))
             {
-                string xpath = new Regex(@"\B\/html\[\d+\]").Replace(
-                    MyLibrary.XPathSanitize(item.XPath.ToLower()), @"/");
+                string xpath = XPath.Sanitize(item.XPath.ToLower());
                 dictionaryNode.Add(item, xpath);
             }
 
-            foreach (var item in dictionaryElement.Select(element => MyLibrary.XPathToMask(element.Value))
+            foreach (var item in dictionaryElement.Select(element => XPath.ToRegexPattern(element.Value))
                 .SelectMany(mask => (from item in dictionaryNode
                     let matches = Regex.Matches(item.Value, mask)
                     where matches.Count == 1 && !nodes.Contains(item.Key)
@@ -306,11 +333,13 @@ namespace MyWebSimulator
                 Debug.WriteLine(item.Value);
                 nodes.Add(item.Key);
             }
-            return nodes;
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return nodes.ToArray();
         }
 
         public void HighlightElement(IWebElement webElement, bool highlight, bool scrollToElement)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             if (scrollToElement) ScrollToElement(webElement);
 
             var styles = new Dictionary<string, string>
@@ -320,8 +349,11 @@ namespace MyWebSimulator
                 {@"border-style:solid;", @"border(-(left|right|top|bottom))?-style\s*:\s*solid(\s*;)?"},
                 {@"border-width:4px;", @"border(-(left|right|top|bottom))?-width\s*:\s*4px(\s*;)?"},
             };
-            if (webElement != null)
+            if (webElement != null && !webElement.IsNullOrEmpty())
             {
+                Debug.Assert(!(webElement is IWebDocument));
+                Debug.Assert(!(webElement is IWebWindow));
+                Debug.WriteLine("webElement = " + webElement.ToString());
                 if (highlight)
                 {
                     try
@@ -349,19 +381,33 @@ namespace MyWebSimulator
                     }
                 }
             }
+            else
+            {
+                Debug.WriteLine("webElement IsNullOrEmpty");
+            }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
-        public object SimulateTextEntry(IWebElement webElement, List<object> parameters)
+        public object SimulateTextEntry(IWebElement webElement, IEnumerable<object> parameters)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             Type[] types = {typeof (ManagedWebElement), typeof (string)};
             MethodInfo methodInfo = GetType().GetMethod("TextEntry", types);
             var objects = new List<object> {webElement};
             objects.AddRange(parameters);
-            return methodInfo.Invoke(this, objects.ToArray());
+            object value = methodInfo.Invoke(this, objects.ToArray());
+            Debug.WriteLine("value = " + String.IntroText(value.ToString()));
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object SimulateEvent(EventInfo eventInfo, IWebElement webElement, List<object> parameters)
+        public object SimulateEvent(EventInfo eventInfo, IWebElement webElement, IEnumerable<object> parameters)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             Type[] typesIWebElement = {typeof (IWebElement)};
             Type[] typesIWebElementVirtualKeyCode = {typeof (IWebElement), typeof (VirtualKeyCode)};
             var dictionary = new Dictionary<EventInfo, MethodInfo>
@@ -390,34 +436,45 @@ namespace MyWebSimulator
                 MethodInfo methodInfo = dictionary[eventInfo];
                 var objects = new List<object> {webElement};
                 objects.AddRange(parameters);
-                return methodInfo.Invoke(this, objects.ToArray());
+                object value = methodInfo.Invoke(this, objects.ToArray());
+                Debug.WriteLine("value = " + String.IntroText(value.ToString()));
+                Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+                return value;
             }
             throw new NotImplementedException();
         }
 
         public void ScrollToElement(IWebElement webElement)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             try
             {
-                webElement.ScrollIntoView(true);
+                if (webElement != null && !webElement.IsNullOrEmpty()) webElement.ScrollIntoView(true);
             }
             catch (Exception exception)
             {
                 LastError = exception;
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public object RunScript()
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Type type = GetType();
             foreach (PropertyInfo prop in type.GetProperties())
             {
                 // Setting the externals parameters of the context
-                JintEngine.SetParameter(prop.Name, prop.GetValue(this));
+                JintEngine.SetParameter(prop.Name, prop.GetValue(this, null));
             }
 
             // Running the script
-            return JintEngine.Run(JavaScript);
+            object value = JintEngine.Run(JavaScript);
+            Debug.WriteLine("value = " + String.IntroText(value.ToString()));
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
         #region
@@ -440,6 +497,9 @@ namespace MyWebSimulator
 
         public void Focus(IWebElement webElement)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -457,10 +517,14 @@ namespace MyWebSimulator
                 SetWebBrowserControlFocus();
                 webElement.Focus();
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void Click(IWebElement webElement)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -479,10 +543,14 @@ namespace MyWebSimulator
                 webElement.Focus();
                 InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void DoubleClick(IWebElement webElement)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -502,10 +570,14 @@ namespace MyWebSimulator
                 InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
                 InputSimulator.Keyboard.KeyDown(VirtualKeyCode.RETURN);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void KeyDown(IWebElement webElement, VirtualKeyCode code)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -524,10 +596,14 @@ namespace MyWebSimulator
                 webElement.Focus();
                 InputSimulator.Keyboard.KeyDown(code);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void KeyPress(IWebElement webElement, VirtualKeyCode code)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -546,10 +622,14 @@ namespace MyWebSimulator
                 webElement.Focus();
                 InputSimulator.Keyboard.KeyPress(code);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void KeyUp(IWebElement webElement, VirtualKeyCode code)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -568,10 +648,14 @@ namespace MyWebSimulator
                 webElement.Focus();
                 InputSimulator.Keyboard.KeyUp(code);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public void TextEntry(IWebElement webElement, string text)
         {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             HighlightElement(HighlightedElement, false, false);
             HighlightElement(HighlightedElement = webElement, true, true);
             try
@@ -590,10 +674,13 @@ namespace MyWebSimulator
                 webElement.Focus();
                 InputSimulator.Keyboard.TextEntry(text);
             }
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
         public IWebElement Select(IWebElement webElement)
         {
+            Debug.Assert(!(webElement is IWebDocument));
+            Debug.Assert(!(webElement is IWebWindow));
             return webElement;
         }
 
@@ -601,107 +688,173 @@ namespace MyWebSimulator
 
         #region
 
-        public object[] Focus(string xpath)
+        public object[] Focus(params object[] arguments)
         {
-            var parameters = new List<object>();
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] Click(string xpath)
+        public object[] Click(params object[] arguments)
         {
-            var parameters = new List<object>();
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] DoubleClick(string xpath)
+        public object[] DoubleClick(params object[] arguments)
         {
-            var parameters = new List<object>();
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] KeyDown(string xpath, VirtualKeyCode code)
+        public object[] KeyDown(params object[] arguments)
         {
-            var parameters = new List<object> {code};
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.Assert(arguments[1] is VirtualKeyCode);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] KeyPress(string xpath, VirtualKeyCode code)
+        public object[] KeyPress(params object[] arguments)
         {
-            var parameters = new List<object> {code};
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.Assert(arguments[1] is VirtualKeyCode);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] KeyUp(string xpath, VirtualKeyCode code)
+        public object[] KeyUp(params object[] arguments)
         {
-            var parameters = new List<object> {code};
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.Assert(arguments[1] is VirtualKeyCode);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] TextEntry(string xpath, string text)
+        public object[] TextEntry(params object[] arguments)
         {
-            var parameters = new List<object> {text};
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.Assert(arguments[1] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
-        public object[] Select(string xpath)
+        public object[] Select(params object[] arguments)
         {
-            var parameters = new List<object>();
-            var types = new List<Type> {typeof (ManagedWebElement)};
-            ParameterInfo[] parameterInfos = MethodBase.GetCurrentMethod().GetParameters();
-            for (int i = 1; i < parameterInfos.Count(); i++) types.Add(parameterInfos[i].ParameterType);
-            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types.ToArray());
+            Debug.Assert(arguments[0] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            Type[] types = arguments.Select(argument => argument.GetType()).ToArray();
+            types[0] = typeof (ManagedWebElement);
+            MethodInfo methodInfo = GetType().GetMethod(MethodBase.GetCurrentMethod().Name, types);
             Debug.Assert(methodInfo != null);
-            return InvokeMethod(methodInfo, xpath, parameters).ToArray();
+            object[] value = InvokeMethod(methodInfo, arguments);
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return value;
         }
 
         #endregion
 
-        private List<object> InvokeMethod(MethodInfo methodInfo, string xpath, List<object> arguments)
+        private object[] InvokeMethod(MethodInfo methodInfo, object[] arguments)
         {
+            Debug.Assert(arguments[0] is string);
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            HtmlNode[] nodes = HtmlDocument.DocumentNode.SelectNodes((string) arguments[0]).ToArray();
+            IEnumerable<IWebElement> elements = GetElementByNode(nodes);
+            object[] objects = arguments.ToArray();
             var results = new List<object>();
-            List<HtmlNode> nodes = HtmlDocument.DocumentNode.SelectNodes(xpath).ToList();
-            List<IWebElement> elements = GetElementByNode(nodes);
-            foreach (var objects in elements.Select(element => new List<object> {element}))
+            foreach (IWebElement element in elements)
             {
-                objects.AddRange(arguments);
-                results.Add(methodInfo.Invoke(this, objects.ToArray()));
+                objects[0] = element;
+                results.Add(methodInfo.Invoke(this, objects));
             }
-            return results;
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            return results.ToArray();
+        }
+
+        public static Rectangle get_Rectangle(IWebElement webElement)
+        {
+            Debug.Assert(webElement != null);
+            var rect = new Rectangle(0, 0, webElement.OffsetRectangle.Width, webElement.OffsetRectangle.Height);
+            for (IWebElement current = webElement; current != null; current = current.OffsetParent)
+            {
+                Thread.Sleep(0);
+                Rectangle currentRect = current.OffsetRectangle;
+                rect.X += currentRect.X;
+                rect.Y += currentRect.Y;
+            }
+            return rect;
+        }
+
+        public static string get_XPath(IWebElement webElement)
+        {
+            Debug.Assert(webElement != null);
+            string xpath = "";
+            for (IWebElement parent = webElement.Parent;
+                parent != null && !parent.IsNullOrEmpty();
+                parent = parent.Parent)
+            {
+                Thread.Sleep(0);
+                int index = 0;
+                foreach (IWebElement child in parent.Children)
+                {
+                    Thread.Sleep(0);
+                    if (string.Compare(child.TagName, webElement.TagName, StringComparison.OrdinalIgnoreCase) ==
+                        0)
+                        index++;
+                    if (child.Equals(webElement))
+                    {
+                        xpath = string.Format(@"/{0}[{1}]{2}", webElement.TagName, index, xpath);
+                        break;
+                    }
+                }
+                webElement = parent;
+            }
+            xpath = string.Format(@"/{0}[{1}]{2}", webElement.TagName, 1, xpath);
+            return xpath.ToLower();
         }
     }
 }

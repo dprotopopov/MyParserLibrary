@@ -1,4 +1,5 @@
 ﻿using System;
+using CefSharp.Example;
 
 namespace MyWebSimulator.Application
 {
@@ -10,6 +11,7 @@ namespace MyWebSimulator.Application
         [STAThread]
         private static void Main()
         {
+            ExamplePresenter.Init();
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
             System.Windows.Forms.Application.Run(new MyWebSimulatorForm());
