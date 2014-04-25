@@ -41,6 +41,7 @@ namespace MyParser
         public IDatabase Database { get; set; }
         public int Edition { get; set; }
         public string Method { get; set; }
+        public string Request { get; set; }
         public string Encoding { get; set; }
         public string Compression { get; set; }
         public bool UseRandomProxy { get; set; }
@@ -64,14 +65,37 @@ namespace MyParser
             for (int i = 0; i < NumberOfTriesBeforeError && !memoryStreams.Any(); i++)
                 try
                 {
-                    WebRequest webRequest = WebRequest.Create(uri);
-                    webRequest.Timeout = (int) Timeout.TotalMilliseconds;
+                    var httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+                    httpWebRequest.CookieContainer = new CookieContainer();
+
+                    if (string.Compare(Method, "JSON", StringComparison.Ordinal) == 0)
+                    {
+                        httpWebRequest.ContentType = "application/json; charset=utf-8";
+                        httpWebRequest.Accept = "application/json, text/javascript, */*";
+                    }
+
+                    if (string.Compare(Method, "JSON", StringComparison.Ordinal) == 0 ||
+                        string.Compare(Method, "POST", StringComparison.Ordinal) == 0)
+                    {
+                        httpWebRequest.Method = "POST";
+
+                        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+                        {
+                            Debug.WriteLine("Request: {0}", Request);
+                            streamWriter.Write(Request);
+                            streamWriter.Flush();
+                        }
+                    }
+                    else
+                        httpWebRequest.Method = Method;
+
+                    httpWebRequest.Timeout = (int) Timeout.TotalMilliseconds;
                     if (UseRandomProxy)
                         try
                         {
                             Database.Wait(Database.Connection);
                             Proxy proxy = Database.GetNextProxy();
-                            webRequest.Proxy = proxy.ToWebProxy();
+                            httpWebRequest.Proxy = proxy.ToWebProxy();
                         }
                         catch (Exception exception)
                         {
@@ -87,7 +111,7 @@ namespace MyParser
                     {
                         SessionManager.Wait(webSession);
                         SessionManager.AddSession(webSession);
-                        WebResponse responce = SessionManager.GetResponse(webSession, webRequest);
+                        WebResponse responce = SessionManager.GetResponse(webSession, httpWebRequest);
                         Stream responceStream = responce.GetResponseStream();
                         if (responceStream == null) throw new Exception();
                         memoryStreams.Add(new MemoryStream());

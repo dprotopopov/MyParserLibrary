@@ -121,10 +121,7 @@ namespace MyParser
         {
             get
             {
-                return new CompressionManager
-                {
-                    ModuleNamespace = ModuleNamespace,
-                };
+                return new CompressionManager();
             }
         }
 

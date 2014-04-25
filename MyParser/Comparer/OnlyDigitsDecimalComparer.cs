@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace MyParser.Comparer
@@ -20,6 +21,7 @@ namespace MyParser.Comparer
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception.ToString());
                 parse = MyLibrary.Types.Decimal.Default;
             }
             try
@@ -28,6 +30,7 @@ namespace MyParser.Comparer
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception.ToString());
                 value = MyLibrary.Types.Decimal.Default;
             }
 
@@ -53,6 +56,7 @@ namespace MyParser.Comparer
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception.ToString());
                 parse = MyLibrary.Types.Decimal.Default;
             }
             return parse.GetHashCode();

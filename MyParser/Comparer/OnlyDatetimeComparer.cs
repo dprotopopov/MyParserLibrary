@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MyLibrary.Collections;
@@ -24,6 +25,7 @@ namespace MyParser.Comparer
                 }
                 catch (Exception exception)
                 {
+                    Debug.WriteLine(exception.ToString());
                     values.Add(MyLibrary.Types.DateTime.Default);
                 }
             return values.First().CompareTo(values.Last());
@@ -50,6 +52,7 @@ namespace MyParser.Comparer
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception.ToString());
                 dateTime = MyLibrary.Types.DateTime.Default;
             }
             return dateTime.GetHashCode();

@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.Data.SQLite;
 using MyLibrary.Collections;
 
 namespace MyParser
 {
-    public interface IDatabase
+    public interface IDatabase : MyDatabase.IDatabase
     {
         string SiteTable { get; }
         string MappingTable { get; }
@@ -12,12 +11,6 @@ namespace MyParser
         string ReturnFieldTable { get; }
         string BuilderTable { get; }
         string ProxyTable { get; }
-        string IdColumn { get; }
-        string TitleColumn { get; }
-        string TableNameColumn { get; }
-        string LevelColumn { get; }
-        string ParentIdColumn { get; }
-        string HasChildColumn { get; }
         string ModuleNamespaceColumn { get; }
         string ModuleClassnameColumn { get; }
         string AddressColumn { get; }
@@ -26,15 +19,6 @@ namespace MyParser
         string SiteIdColumn { get; }
         string ModuleClassname { get; set; }
 
-        /// <summary>
-        ///     Коннектор к базе данных
-        /// </summary>
-        SQLiteConnection Connection { get; set; }
-
-        bool Wait(SQLiteConnection connection);
-
-        void Release(SQLiteConnection connection);
-        void Connect();
 
         /// <summary>
         ///     Загрузка из базы данных настроек указанного сайта
@@ -63,20 +47,12 @@ namespace MyParser
         ReturnFieldInfos GetReturnFieldInfos(object siteId);
 
         BuilderInfos GetBuilderInfos(object siteId);
-        IEnumerable<Record> Load(Record maskRecord);
-        void Delete(Record maskRecord);
-        Record GetNext(Record maskRecord);
-        bool Exists(Record maskRecord);
-        int InsertOrReplace(IEnumerable<Record> records);
-        int InsertOrReplace(Record record);
-        int ExecuteNonQuery(string commandText);
         Proxy GetNextProxy();
-        int InsertIfNoExists(Record record);
 
         /// <summary>
         ///     Загрузка из базы данных всех значений из указанной колонки указанной таблицы
         /// </summary>
-        IEnumerable<object> GetList(params object[] parameters);
+        new IEnumerable<object> GetList(params object[] parameters);
 
         /// <summary>
         ///     Загрузка всех пар Ключ-Значение из таблицы базы данных для указанного siteId
@@ -93,6 +69,6 @@ namespace MyParser
         ///     Ключ в поле Название таблицы+"Id"
         ///     Значение в поле columnName
         /// </summary>
-        object GetScalar(params object[] parameters);
+        new object GetScalar(params object[] parameters);
     }
 }

@@ -24,3 +24,11 @@ D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Debug\MyParser.Forms.csproj.G
 D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Debug\MyParser.Forms.dll.licenses
 D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Debug\MyParser.Forms.dll
 D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Debug\MyParser.Forms.pdb
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\x64\SQLite.Interop.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\x86\SQLite.Interop.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\EntityFramework.SqlServer.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\MyDatabase.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\System.Data.SQLite.EF6.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\System.Data.SQLite.Linq.dll
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\MyDatabase.pdb
+D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Debug\EntityFramework.SqlServer.xml

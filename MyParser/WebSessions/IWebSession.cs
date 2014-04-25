@@ -13,6 +13,8 @@ namespace MyParser.WebSessions
         WebSessionCallback OnCompliteCallback { get; set; }
         WebSessionCallback OnErrorCallback { get; set; }
 
+        string Method { get; set; }
+        string Request { get; set; }
         WebRequest WebRequest { get; set; }
         WebResponse WebResponse { get; set; }
         IAsyncResult AsyncResult { get; set; }

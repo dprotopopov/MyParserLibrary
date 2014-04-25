@@ -1,6 +1,6 @@
 ﻿namespace MyParser
 {
-    public class Record : MyLibrary.Collections.Properties, IValueable
+    public class Record : MyDatabase.Record, IValueable
     {
         public Record(MyLibrary.Collections.Properties properties)
             : base(properties)

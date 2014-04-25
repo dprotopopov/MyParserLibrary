@@ -81,11 +81,13 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
-      <HintPath>..\..\IhrStandort\packages\EntityFramework.6.0.0\lib\net40\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\RealtyParser\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\..\IhrStandort\packages\EntityFramework.6.0.0\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\RealtyParser\packages\EntityFramework.6.0.2\lib\net40\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -95,35 +97,38 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Common">
-      <HintPath>..\..\IhrStandort\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Common.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Common.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\IhrStandort\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\ServiceStack.Common.3.9.11\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\IhrStandort\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.SqliteNET">
-      <HintPath>..\..\IhrStandort\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\ServiceStack.OrmLite.Sqlite32.3.9.71\lib\net40\ServiceStack.OrmLite.SqliteNET.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\IhrStandort\packages\ServiceStack.Text.4.0.15\lib\net40\ServiceStack.Text.dll</HintPath>
+    <Reference Include="ServiceStack.Text, Version=3.9.71.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\RealtyParser\packages\ServiceStack.Text.3.9.71\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite, Version=1.0.92.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
+    <Reference Include="System.Data.SQLite, Version=1.0.91.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\System.Data.SQLite.x86.1.0.91.3\lib\net40\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.SQLite.EF6">
-      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.EF6.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\System.Data.SQLite.x86.1.0.91.3\lib\net40\System.Data.SQLite.EF6.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.92.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.91.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\IhrStandort\packages\System.Data.SQLite.x86.1.0.92.0\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
+      <HintPath>..\..\RealtyParser\packages\System.Data.SQLite.x86.1.0.91.3\lib\net40\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -152,7 +157,6 @@
     <Compile Include="Compression\GZipStream.cs" />
     <Compile Include="Compression\ICompression.cs" />
     <Compile Include="Compression\NoCompression.cs" />
-    <Compile Include="Converter.cs" />
     <Compile Include="Crawler.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="DocumentEdition.cs" />
@@ -240,6 +244,10 @@
     <EmbeddedResource Include="Running.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MyLibrary\MyDatabase\MyDatabase.csproj">
+      <Project>{e929b421-2c04-4829-b4e1-7426d0a1b5c2}</Project>
+      <Name>MyDatabase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\MyLibrary\MyLibrary\MyLibrary.csproj">
       <Project>{e80cf993-5e07-4875-85fe-a2adcf76558d}</Project>
       <Name>MyLibrary</Name>

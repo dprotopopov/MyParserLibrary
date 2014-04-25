@@ -22,7 +22,7 @@ namespace MyParser
             }
         }
 
-        public object TableName
+        public object Method
         {
             get
             {
@@ -40,7 +40,25 @@ namespace MyParser
             }
         }
 
-        public object Url
+        public object RequestTemplate
+        {
+            get
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (!ContainsKey(propertyName)) Add(propertyName, string.Empty);
+                return this[propertyName];
+            }
+            set
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (ContainsKey(propertyName))
+                    this[propertyName] = value;
+                else
+                    Add(propertyName, value);
+            }
+        }
+
+        public object TableName
         {
             get
             {

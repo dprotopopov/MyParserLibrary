@@ -33,3 +33,7 @@ D:\Projects\MyParserLibrary\MyParser\obj\x86\Debug\MyParser.Properties.Resources
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Debug\MyParser.csproj.GenerateResource.Cache
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Debug\MyParser.dll
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Debug\MyParser.pdb
+D:\Projects\MyParserLibrary\MyParser\bin\x86\Debug\x64\SQLite.Interop.dll
+D:\Projects\MyParserLibrary\MyParser\bin\x86\Debug\x86\SQLite.Interop.dll
+D:\Projects\MyParserLibrary\MyParser\bin\x86\Debug\MyDatabase.dll
+D:\Projects\MyParserLibrary\MyParser\bin\x86\Debug\MyDatabase.pdb

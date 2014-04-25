@@ -105,6 +105,10 @@
     <Compile Include="WebView\WebViewWindow.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MyLibrary\MyDatabase\MyDatabase.csproj">
+      <Project>{e929b421-2c04-4829-b4e1-7426d0a1b5c2}</Project>
+      <Name>MyDatabase</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\MyLibrary\MyLibrary\MyLibrary.csproj">
       <Project>{e80cf993-5e07-4875-85fe-a2adcf76558d}</Project>
       <Name>MyLibrary</Name>

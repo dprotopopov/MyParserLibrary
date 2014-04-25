@@ -9,6 +9,12 @@ namespace MyParser
     {
         int Edition { get; set; }
         string Method { get; set; }
+
+        /// <summary>
+        ///     Данные для POST и JSON
+        /// </summary>
+        string Request { get; set; }
+
         string Encoding { get; set; }
         string Compression { get; set; }
         bool UseRandomProxy { get; set; }

@@ -37,7 +37,7 @@ namespace MyParser
         #region
 
         private string ModuleNamespace { get; set; }
-        private Database Database { get; set; }
+        public IDatabase Database { get; set; }
         private Transformation Transformation { get; set; }
         private Parser Parser { get; set; }
         private ObjectComparer ObjectComparer { get; set; }
@@ -58,8 +58,8 @@ namespace MyParser
             ModuleClassname = GetType().Namespace;
             ModuleNamespace = GetType().Namespace;
             Database = new Database {ModuleClassname = ModuleClassname};
-            CompressionManager = new CompressionManager {ModuleNamespace = ModuleNamespace};
-            Converter = new Converter {ModuleNamespace = ModuleNamespace};
+            CompressionManager = new CompressionManager();
+            Converter = new Converter();
             Transformation = new Transformation();
             Parser = new Parser {Transformation = Transformation};
             Crawler = new Crawler {CompressionManager = CompressionManager};
@@ -257,7 +257,7 @@ namespace MyParser
                 } while
                     (
                     contains &&
-                    levelMapping.ContainsKey(i) && Database.ConvertTo<long>(levelMapping[i]) > 1 &&
+                    levelMapping.ContainsKey(i) && MyDatabase.Database.ConvertTo<long>(levelMapping[i]) > 1 &&
                     parentMapping.ContainsKey(i) && (i = parentMapping[i]) != null &&
                     !string.IsNullOrEmpty(i.ToString())
                     );
@@ -665,27 +665,35 @@ namespace MyParser
             SiteProperties siteProperties = Database.GetSiteProperties(SiteId);
             BuilderInfos builderInfos = Database.GetBuilderInfos(SiteId);
             BuilderInfo builderInfo = builderInfos[TableName.ToString()];
-            Crawler.Method = siteProperties.Method.ToString();
+            Crawler.Method = builderInfo.Method.ToString();
             Crawler.Encoding = siteProperties.Encoding.ToString();
             Crawler.Compression = siteProperties.CompressionClassName.ToString();
             ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
 
-            var baseBuilder = new UriBuilder(builderInfo.Url.ToString())
+            var baseValues = new Values
+            {
+                Table = new StackListQueue<string> {TableName.ToString()},
+            };
+
+            string[] urlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
+            string urlTemplate = (urlTemplates != null && urlTemplates.Length > 1)
+                ? urlTemplates[1]
+                : builderInfo.UrlTemplate.ToString();
+
+
+            baseValues.Url = Transformation.ParseTemplate(urlTemplate, baseValues);
+
+            var baseBuilder = new UriBuilder(String.Parse(baseValues.Url))
             {
                 UserName = siteProperties.UserName.ToString(),
                 Password = siteProperties.Password.ToString(),
             };
+            Debug.WriteLine("baseBuilder {0}", baseBuilder);
 
             MatchCollection matches = Regex.Matches(builderInfo.IdTemplate.ToString(),
                 Transformation.FieldPattern);
 
             string[] flags = builderInfo.Flags.ToString().Split(Parser.SplitChar);
-
-            var baseValues = new Values
-            {
-                Table = new StackListQueue<string> {TableName.ToString()},
-                Url = new StackListQueue<string> {baseBuilder.Uri.ToString()},
-            };
 
             var stackListQueue = new StackListQueue<KeyValuePair<int, Values>>
             {
@@ -750,14 +758,14 @@ namespace MyParser
                     : builderInfo.ValueRegexReplacement.ToString();
 
                 var returnFieldInfos = new ReturnFieldInfos();
+
                 foreach (
                     string key in
                         ReturnFieldInfos.GetType().GetProperties()
                             .Select(propertyInfo => propertyInfo.Name)
                             .Where(key => ReturnFieldInfos.ContainsKey(key)))
-                {
                     returnFieldInfos.Add(key, ReturnFieldInfos[key]);
-                }
+
                 foreach (var pair in new Dictionary<string, string[]>
                 {
                     {ReturnValue, new[] {keyXPathTemplate, keyResultTemplate, keyRegexPattern, keyRegexReplacement}},
@@ -766,7 +774,6 @@ namespace MyParser
                         new[] {valueXPathTemplate, valueResultTemplate, valueRegexPattern, valueRegexReplacement}
                     }
                 })
-                {
                     returnFieldInfos.Add(
                         new ReturnFieldInfo
                         {
@@ -777,8 +784,9 @@ namespace MyParser
                             ReturnFieldRegexPattern = pair.Value[2],
                             ReturnFieldRegexReplacement = pair.Value[3],
                         });
-                }
+
                 Debug.WriteLine("returnFieldInfos {0}:{1}", currentLevel, returnFieldInfos);
+
                 List<string> parentIds =
                     Transformation.ParseTemplate(builderInfo.IdTemplate.ToString(), new Values
                     {
@@ -792,6 +800,12 @@ namespace MyParser
                     Values slice = parentValues.Slice(i);
                     Uri uri = MyLibrary.Types.Uri.Combine(baseBuilder.Uri.ToString(), slice.Url.First());
                     slice.Url = new StackListQueue<string> {uri.ToString()};
+
+                    string[] requestTemplates = builderInfo.RequestTemplate.ToString().Split(Parser.SplitChar);
+                    string requestTemplate = (requestTemplates != null && requestTemplates.Length > currentLevel)
+                        ? requestTemplates[currentLevel]
+                        : builderInfo.RequestTemplate.ToString();
+                    Crawler.Request = String.Parse(Transformation.ParseTemplate(requestTemplate, slice));
 
                     IEnumerable<HtmlDocument> documents =
                         Crawler.WebRequestHtmlDocument(uri, new WebSession());
@@ -871,8 +885,12 @@ namespace MyParser
                         {
                             currentValues.Value = currentOptions;
                             currentValues.Title = new StackListQueue<string>();
-                            currentValues.Url = Transformation.ParseTemplate(builderInfo.UrlTemplate.ToString(),
-                                currentValues).ToList();
+                            string[] currentUrlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
+                            string currentUrlTemplate = (currentUrlTemplates != null &&
+                                                         currentUrlTemplates.Length > currentLevel + 1)
+                                ? currentUrlTemplates[currentLevel + 1]
+                                : builderInfo.UrlTemplate.ToString();
+                            currentValues.Url = Transformation.ParseTemplate(currentUrlTemplate, currentValues).ToList();
                             stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel + 1, currentValues));
                             Total += currentValues.MaxCount;
                         }

@@ -30,7 +30,8 @@ namespace MyParser.WebSessions
         public WebSessionCallback OnStartCallback { get; set; }
         public WebSessionCallback OnCompliteCallback { get; set; }
         public WebSessionCallback OnErrorCallback { get; set; }
-
+        public string Method { get; set; }
+        public string Request { get; set; }
         public WebRequest WebRequest { get; set; }
         public WebResponse WebResponse { get; set; }
         public IAsyncResult AsyncResult { get; set; }

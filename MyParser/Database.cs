@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity.Core;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using MyLibrary.Collections;
 using MyLibrary.LastError;
 using MyLibrary.Lock;
@@ -17,14 +14,14 @@ namespace MyParser
     /// <summary>
     ///     Класс для работы с базой данных
     /// </summary>
-    public class Database : ILastError, ITrace, IDatabase, IValueable, ISingleLock<SQLiteConnection>
+    public class Database : MyDatabase.Database, ILastError, ITrace, IDatabase, IValueable,
+        ISingleLock<SQLiteConnection>
     {
         private readonly MethodInfo _stringFormatMethodInfo = typeof (string).GetMethod("Format",
             new[] {typeof (string), typeof (object[])});
 
         public Database()
         {
-            Mutex = new Mutex();
             ModuleClassname = Defaults.ModuleClassname;
 
             SiteTable = "Site";
@@ -191,15 +188,10 @@ namespace MyParser
 
         #endregion
 
-        private string ConnectionString { get; set; }
         public string ModuleClassname { get; set; }
 
-        /// <summary>
-        ///     Коннектор к базе данных
-        /// </summary>
-        public SQLiteConnection Connection { get; set; }
 
-        public void Connect()
+        public new void Connect()
         {
             if (Connection != null) return;
             ConnectionString = string.Format("data source={0}.sqlite3", ModuleClassname);
@@ -412,255 +404,15 @@ namespace MyParser
             return builderInfos;
         }
 
-        public IEnumerable<Record> Load(Record maskRecord)
-        {
-            var list = new StackListQueue<Record>();
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    command.CommandText =
-                        string.Format("SELECT * FROM {0} WHERE {1}", maskRecord.GetType().Name,
-                            string.Join(" AND ", maskRecord.GetType().GetProperties()
-                                .Where(prop => maskRecord.ContainsKey(prop.Name))
-                                .Select(prop => string.Format("{0}=@{0}", prop.Name))));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (PropertyInfo prop in maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name)))
-                    {
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            maskRecord[prop.Name]));
-                    }
-                    SQLiteDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        var record = new Record();
-                        for (int i = 0; i < reader.FieldCount; i++)
-                            record.Add(reader.GetName(i), reader[i]);
-                        list.Add(record);
-                    }
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return list;
-        }
-
-        public void Delete(Record maskRecord)
-        {
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    string where = string.Join(" AND ", maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name))
-                        .Select(prop => string.Format("{0}=@{0}", prop.Name)));
-                    command.CommandText =
-                        string.Format("DELETE FROM {0} WHERE {1}", maskRecord.GetType().Name,
-                            string.IsNullOrEmpty(where) ? string.Empty : string.Format("WHERE {0}", where));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (PropertyInfo prop in maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name)))
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            maskRecord[prop.Name]));
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-        }
-
-        public Record GetNext(Record maskRecord)
-        {
-            var record = new Record();
-            Debug.WriteLine(ConnectionString);
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    string where = string.Join(" AND ", maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name))
-                        .Select(prop => string.Format("{0}=@{0}", prop.Name)));
-                    command.CommandText =
-                        string.Format("SELECT * FROM {0} {1} LIMIT 1", maskRecord.GetType().Name,
-                            string.IsNullOrEmpty(where) ? string.Empty : string.Format("WHERE {0}", where));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (PropertyInfo prop in maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name)))
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            maskRecord[prop.Name]));
-                    SQLiteDataReader reader = command.ExecuteReader();
-                    if (!reader.HasRows)
-                        throw new ObjectNotFoundException();
-                    while (reader.Read())
-                        for (int i = 0; i < reader.FieldCount; i++)
-                            record.Add(reader.GetName(i), reader[i]);
-                }
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    command.CommandText =
-                        string.Format("DELETE FROM {0} WHERE {1}", maskRecord.GetType().Name,
-                            string.Join(" AND ", maskRecord.GetType().GetProperties()
-                                .Where(prop => record.ContainsKey(prop.Name))
-                                .Select(prop => string.Format("{0}=@{0}", prop.Name))));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (PropertyInfo prop in maskRecord.GetType().GetProperties()
-                        .Where(prop => record.ContainsKey(prop.Name)))
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            record[prop.Name]));
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return record;
-        }
-
-        public bool Exists(Record maskRecord)
-        {
-            bool value = false;
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    command.CommandText =
-                        string.Format("SELECT * FROM {0} WHERE {1} LIMIT 1", maskRecord.GetType().Name,
-                            string.Join(" AND ", maskRecord.GetType().GetProperties()
-                                .Where(prop => maskRecord.ContainsKey(prop.Name))
-                                .Select(prop => string.Format("{0}=@{0}", prop.Name))));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (PropertyInfo prop in maskRecord.GetType().GetProperties()
-                        .Where(prop => maskRecord.ContainsKey(prop.Name)))
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            maskRecord[prop.Name]));
-                    SQLiteDataReader reader = command.ExecuteReader();
-                    value = reader.HasRows;
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return value;
-        }
-
-        public int InsertOrReplace(IEnumerable<Record> records)
-        {
-            int insertOrReplace = 0;
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    foreach (Record record in records)
-                    {
-                        command.CommandText =
-                            string.Format("INSERT OR REPLACE INTO {0}({1}) VALUES ({2})", record.GetType().Name,
-                                string.Join(",",
-                                    record.GetType()
-                                        .GetProperties()
-                                        .Where(prop => record.ContainsKey(prop.Name))
-                                        .Select(prop => prop.Name)),
-                                string.Join(",",
-                                    record.GetType()
-                                        .GetProperties()
-                                        .Where(prop => record.ContainsKey(prop.Name))
-                                        .Select(prop => "@" + prop.Name)));
-                        Debug.WriteLine(command.CommandText);
-                        foreach (
-                            PropertyInfo prop in
-                                record.GetType().GetProperties().Where(prop => record.ContainsKey(prop.Name)))
-                            command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                                record[prop.Name]));
-                        insertOrReplace += command.ExecuteNonQuery();
-                    }
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return insertOrReplace;
-        }
-
-        public int InsertOrReplace(Record record)
-        {
-            int insertOrReplace = 0;
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    command.CommandText =
-                        string.Format("INSERT OR REPLACE INTO {0}({1}) VALUES ({2})", record.GetType().Name,
-                            string.Join(",",
-                                record.GetType()
-                                    .GetProperties()
-                                    .Where(prop => record.ContainsKey(prop.Name))
-                                    .Select(prop => prop.Name)),
-                            string.Join(",",
-                                record.GetType()
-                                    .GetProperties()
-                                    .Where(prop => record.ContainsKey(prop.Name))
-                                    .Select(prop => "@" + prop.Name)));
-                    Debug.WriteLine(command.CommandText);
-                    foreach (
-                        PropertyInfo prop in
-                            record.GetType().GetProperties().Where(prop => record.ContainsKey(prop.Name)))
-                        command.Parameters.Add(new SQLiteParameter(string.Format("@{0}", prop.Name),
-                            record[prop.Name]));
-                    insertOrReplace = command.ExecuteNonQuery();
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return insertOrReplace;
-        }
-
-        public int ExecuteNonQuery(string commandText)
-        {
-            int executeNonQuery = 0;
-            try
-            {
-                Connection.Open();
-                using (SQLiteCommand command = Connection.CreateCommand())
-                {
-                    command.CommandText = commandText;
-                    Debug.WriteLine(command.CommandText);
-                    executeNonQuery = command.ExecuteNonQuery();
-                }
-            }
-            finally
-            {
-                Connection.Close();
-            }
-            return executeNonQuery;
-        }
-
         public Proxy GetNextProxy()
         {
             return new Proxy(GetNext(new Proxy()));
         }
 
-        public int InsertIfNoExists(Record record)
-        {
-            return Exists(record) ? 0 : InsertOrReplace(record);
-        }
-
         /// <summary>
         ///     Загрузка из базы данных всех значений из указанной колонки указанной таблицы
         /// </summary>
-        public IEnumerable<object> GetList(params object[] parameters)
+        public new IEnumerable<object> GetList(params object[] parameters)
         {
             Type[] types = parameters.Select(parameter => parameter.GetType()).ToArray();
             long current = 0;
@@ -862,7 +614,7 @@ namespace MyParser
         ///     Ключ в поле Название таблицы+"Id"
         ///     Значение в поле columnName
         /// </summary>
-        public object GetScalar(params object[] parameters)
+        public new object GetScalar(params object[] parameters)
         {
             Type[] types = parameters.Select(arg => arg.GetType()).ToArray();
             foreach (var pair in GetScalarProfiles.Where(pair => MyLibrary.Types.Type.IsKindOf(types, pair.Key)))
@@ -892,66 +644,33 @@ namespace MyParser
             throw new NotImplementedException();
         }
 
-        public object LastError { get; set; }
-
-        public ProgressCallback ProgressCallback { get; set; }
-        public AppendLineCallback AppendLineCallback { get; set; }
-        public CompliteCallback CompliteCallback { get; set; }
-
-        public Values ToValues()
+        public new Values ToValues()
         {
             return new Values(this);
         }
 
         #region
 
-        public string SiteTable { get; private set; }
-        public string MappingTable { get; private set; }
-        public string HierarchicalTable { get; private set; }
-        public string ReturnFieldTable { get; private set; }
-        public string BuilderTable { get; private set; }
+        public string SiteTable { get; protected set; }
+        public string MappingTable { get; protected set; }
+        public string HierarchicalTable { get; protected set; }
+        public string ReturnFieldTable { get; protected set; }
+        public string BuilderTable { get; protected set; }
         public string ProxyTable { get; private set; }
 
-        public string IdColumn { get; private set; }
-        public string TitleColumn { get; private set; }
-        public string TableNameColumn { get; private set; }
-        public string LevelColumn { get; private set; }
-        public string ParentIdColumn { get; private set; }
-        public string HasChildColumn { get; private set; }
-        public string ModuleNamespaceColumn { get; private set; }
-        public string ModuleClassnameColumn { get; private set; }
+        public new string IdColumn { get; protected set; }
+        public new string TitleColumn { get; protected set; }
+        public new string TableNameColumn { get; protected set; }
+        public new string LevelColumn { get; protected set; }
+        public new string ParentIdColumn { get; protected set; }
+        public new string HasChildColumn { get; protected set; }
+        public string ModuleNamespaceColumn { get; protected set; }
+        public string ModuleClassnameColumn { get; protected set; }
         public string AddressColumn { get; private set; }
-        public string PortColumn { get; private set; }
+        public string PortColumn { get; protected set; }
         public string SchemaColumn { get; private set; }
-        public string SiteIdColumn { get; private set; }
+        public string SiteIdColumn { get; protected set; }
 
         #endregion
-
-        #region
-
-        private Mutex Mutex { get; set; }
-
-        public bool Wait(SQLiteConnection semaphore)
-        {
-            while (!Mutex.WaitOne(0)) Thread.Sleep(1000);
-            return true;
-        }
-
-        public void Release(SQLiteConnection semaphore)
-        {
-            Mutex.ReleaseMutex();
-        }
-
-        public bool Wait(SQLiteConnection semaphore, TimeSpan timeout)
-        {
-            return Mutex.WaitOne(timeout);
-        }
-
-        #endregion
-
-        public static T ConvertTo<T>(object obj)
-        {
-            return (T) TypeDescriptor.GetConverter(obj).ConvertTo(obj, typeof (T));
-        }
     }
 }

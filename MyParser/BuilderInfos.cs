@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MyLibrary;
-using MyLibrary.Types;
+using String = MyLibrary.Types.String;
 
 namespace MyParser
 {
+    [Serializable]
     public class BuilderInfos : Dictionary<string, BuilderInfo>, IValueable
     {
         public Values ToValues()

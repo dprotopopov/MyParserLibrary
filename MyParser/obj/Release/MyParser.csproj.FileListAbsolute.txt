@@ -6,6 +6,7 @@ D:\Projects\MyParserLibrary\MyParser\bin\Release\EntityFramework.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\EntityFramework.SqlServer.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\HtmlAgilityPack.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\ICSharpCode.SharpZipLib.dll
+D:\Projects\MyParserLibrary\MyParser\bin\Release\MyDatabase.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\MyLibrary.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Common.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Interfaces.dll
@@ -16,6 +17,7 @@ D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.EF6.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.Linq.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\TidyManaged.dll
+D:\Projects\MyParserLibrary\MyParser\bin\Release\MyDatabase.pdb
 D:\Projects\MyParserLibrary\MyParser\bin\Release\MyLibrary.pdb
 D:\Projects\MyParserLibrary\MyParser\bin\Release\TidyManaged.xml
 D:\Projects\MyParserLibrary\MyParser\bin\Release\EntityFramework.xml
