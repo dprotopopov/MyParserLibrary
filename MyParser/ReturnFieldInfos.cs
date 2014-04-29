@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using MyLibrary;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using String = MyLibrary.Types.String;
 
@@ -11,6 +12,7 @@ namespace MyParser
     [Serializable]
     public class ReturnFieldInfos : Dictionary<string, IEnumerable<ReturnFieldInfo>>, IValueable
     {
+        [Value]
         public IEnumerable<ReturnFieldInfo> Url
         {
             get
@@ -28,6 +30,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> Email
         {
             get
@@ -45,6 +48,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> Phone
         {
             get
@@ -62,6 +66,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> PublicationId
         {
             get
@@ -79,6 +84,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> PublicationLink
         {
             get
@@ -96,6 +102,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> PublicationDatetime
         {
             get
@@ -113,6 +120,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> OtherPageUrl
         {
             get
@@ -130,6 +138,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> Option
         {
             get
@@ -147,6 +156,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<ReturnFieldInfo> Value
         {
             get

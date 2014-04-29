@@ -1,4 +1,8 @@
-﻿namespace MyParser
+﻿using System.Linq;
+using System.Reflection;
+using MyLibrary.Attribute;
+
+namespace MyParser
 {
     public class Record : MyDatabase.Record, IValueable
     {

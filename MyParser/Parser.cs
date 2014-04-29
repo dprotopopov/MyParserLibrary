@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MyLibrary;
 using MyLibrary.LastError;
@@ -18,19 +19,13 @@ namespace MyParser
     /// </summary>
     public class Parser : ILastError, IParser, ITrace, IValueable
     {
-        public const char SplitChar = '\\';
-
-        private readonly MethodInfo[] _methodInfos =
-        {
-            typeof (Parser).GetMethod("InvokeNodeProperty"),
-            typeof (Parser).GetMethod("AttributeValue"),
-            typeof (Parser).GetMethod("CustomNodeProperty")
-        };
-
         public Parser()
         {
             Transformation = Defaults.Transformation;
+            SplitChar = '\\';
         }
+
+        public char SplitChar { get; set; }
 
         public ITransformation Transformation { get; set; }
         public object LastError { get; set; }
@@ -85,7 +80,7 @@ namespace MyParser
                                     select match.Value.Trim()))
                         .Select(
                             input => regex.Replace(input, returnFieldInfo.ReturnFieldRegexReplacement.ToString()).Trim())
-                        .Where(replace => !string.IsNullOrEmpty(replace));
+                        .Where(replace => !string.IsNullOrWhiteSpace(replace));
                 returnFields.Add(returnFieldInfo.ReturnFieldId.ToString(), list);
                 if (ProgressCallback != null) ProgressCallback(++current, total);
             }
@@ -104,28 +99,23 @@ namespace MyParser
         /// <returns></returns>
         public Values BuildValues(string template, HtmlNode node)
         {
+            IEnumerable<string> names = from Match match in Regex.Matches(template, Transformation.FieldPattern)
+                select match.Groups[MyLibrary.Transformation.NameGroup].Value;
+            IEnumerable<MethodInfo> methods = GetType()
+                .GetMethods(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Static)
+                .Where(p => p.GetCustomAttributes(typeof (NodeProperty), false).Any());
+
             var values = new Values();
-            MatchCollection matches = Regex.Matches(template, Transformation.FieldPattern);
-            long current = 0;
-            long total = matches.Count*_methodInfos.Count();
-            foreach (
-                string name in
-                    from Match match in matches
-                    select match.Groups[MyLibrary.Transformation.NameGroup].Value)
-                foreach (MethodInfo methodInfo in _methodInfos)
-                    try
-                    {
-                        string key = string.Format("{0}", name);
-                        if (values.ContainsKey(key)) continue;
-                        object value = methodInfo.Invoke(null, new object[] {node, name});
-                        if (value != null) values.Add(key, value.ToString());
-                        if (ProgressCallback != null) ProgressCallback(++current, total);
-                    }
-                    catch (Exception exception)
-                    {
-                        LastError = exception;
-                        Debug.WriteLine(LastError.ToString());
-                    }
+            Parallel.ForEach(from name in names
+                from method in methods
+                select new KeyValuePair<string, MethodInfo>(name, method), pair =>
+                {
+                    lock (values) if (values.ContainsKey(pair.Key)) return;
+                    object value = pair.Value.Invoke(null, new object[] {node, pair.Key});
+                    if (value == null) return;
+                    lock (values) values.Add(pair.Key, value.ToString());
+                });
+
             if (CompliteCallback != null) CompliteCallback();
             Thread.Yield();
             return values;
@@ -148,6 +138,7 @@ namespace MyParser
         /// <param name="node"></param>
         /// <param name="attributeName"></param>
         /// <returns></returns>
+        [NodeProperty]
         public static string AttributeValue(HtmlNode node, string attributeName)
         {
             HtmlAttribute attribute = node.Attributes[attributeName];
@@ -161,11 +152,14 @@ namespace MyParser
         /// <param name="node"></param>
         /// <param name="propertyName"></param>
         /// <returns></returns>
+        [NodeProperty]
         public static string InvokeNodeProperty(HtmlNode node, string propertyName)
         {
-            string[] names = propertyName.Split('.');
             object value = node;
-            foreach (PropertyInfo propertyInfo in names.Select(name => typeof (HtmlNode).GetProperty(name)))
+            foreach (
+                PropertyInfo propertyInfo in propertyName.Split('.')
+                    .Select(name => typeof (HtmlNode).GetProperty(name))
+                )
             {
                 value = propertyInfo != null ? propertyInfo.GetValue(value, null) : null;
                 if (value == null) return null;
@@ -179,6 +173,7 @@ namespace MyParser
         /// <param name="node"></param>
         /// <param name="propertyName"></param>
         /// <returns></returns>
+        [NodeProperty]
         public static string CustomNodeProperty(HtmlNode node, string propertyName)
         {
             switch (propertyName)
@@ -323,7 +318,7 @@ namespace MyParser
         private static bool StyleModifyVisibility(string style)
         {
             if (string.IsNullOrWhiteSpace(style)) return false;
-            if (string.IsNullOrEmpty(style)) return false;
+            if (string.IsNullOrWhiteSpace(style)) return false;
 
             Dictionary<string, string> keys = ParseHtmlStyleString(style);
 
@@ -333,7 +328,7 @@ namespace MyParser
         private static bool CheckStyleVisibility(string style)
         {
             if (string.IsNullOrWhiteSpace(style)) return true;
-            if (string.IsNullOrEmpty(style)) return true;
+            if (string.IsNullOrWhiteSpace(style)) return true;
 
             Dictionary<string, string> keys = ParseHtmlStyleString(style);
 
@@ -355,5 +350,9 @@ namespace MyParser
         }
 
         #endregion
+
+        protected class NodeProperty : Attribute
+        {
+        }
     }
 }

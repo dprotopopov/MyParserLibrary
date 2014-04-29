@@ -17,7 +17,7 @@ namespace MyParser.Comparer
             Decimal value;
             try
             {
-                parse = MyLibrary.Types.Decimal.Parse(_regex.Replace(x, @"").Trim());
+                parse = MyLibrary.Types.Decimal.Parse(_regex.Replace(x, string.Empty).Trim());
             }
             catch (Exception exception)
             {
@@ -26,7 +26,7 @@ namespace MyParser.Comparer
             }
             try
             {
-                value = MyLibrary.Types.Decimal.Parse(_regex.Replace(y, @"").Trim());
+                value = MyLibrary.Types.Decimal.Parse(_regex.Replace(y, string.Empty).Trim());
             }
             catch (Exception exception)
             {
@@ -39,7 +39,7 @@ namespace MyParser.Comparer
 
         public bool IsValid(string s)
         {
-            return true;
+            return !string.IsNullOrWhiteSpace(s);
         }
 
         public bool Equals(string x, string y)
@@ -52,7 +52,7 @@ namespace MyParser.Comparer
             Decimal parse;
             try
             {
-                parse = MyLibrary.Types.Decimal.Parse(_regex.Replace(obj, @"").Trim());
+                parse = MyLibrary.Types.Decimal.Parse(_regex.Replace(obj, string.Empty).Trim());
             }
             catch (Exception exception)
             {

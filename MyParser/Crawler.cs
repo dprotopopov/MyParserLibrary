@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using HtmlAgilityPack;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.Lock;
 using MyLibrary.Trace;
@@ -67,6 +69,13 @@ namespace MyParser
                 {
                     var httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
                     httpWebRequest.CookieContainer = new CookieContainer();
+                    httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
+                    httpWebRequest.ContentType = string.Format(@"text/html; charset={0}", Encoding);
+                    httpWebRequest.Referer = @"http://yandex.ru";
+                    httpWebRequest.Accept = @"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                    httpWebRequest.UserAgent =
+                        @"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0";
+                    httpWebRequest.KeepAlive = true;
 
                     if (string.Compare(Method, "JSON", StringComparison.Ordinal) == 0)
                     {

@@ -4,6 +4,7 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.LastError;
 using MyLibrary.Lock;
@@ -203,7 +204,7 @@ namespace MyParser
         /// </summary>
         public SiteProperties GetSiteProperties(object siteId)
         {
-            Debug.Assert(siteId != null && !string.IsNullOrEmpty(siteId.ToString()));
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
             var properties = new SiteProperties();
             try
             {
@@ -235,7 +236,7 @@ namespace MyParser
 
         public Mappings GetMappings(object siteId)
         {
-            Debug.Assert(siteId != null && !string.IsNullOrEmpty(siteId.ToString()));
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
             var mappings = new Mappings();
             object[] mapping = GetList(MappingTable, TableNameColumn).ToArray();
             long current = 0;
@@ -330,7 +331,7 @@ namespace MyParser
         /// </summary>
         public ReturnFieldInfos GetReturnFieldInfos(object siteId)
         {
-            Debug.Assert(siteId != null && !string.IsNullOrEmpty(siteId.ToString()));
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
             var returnFieldInfos = new ReturnFieldInfos();
             try
             {
@@ -368,7 +369,7 @@ namespace MyParser
 
         public BuilderInfos GetBuilderInfos(object siteId)
         {
-            Debug.Assert(siteId != null && !string.IsNullOrEmpty(siteId.ToString()));
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
             var builderInfos = new BuilderInfos();
             try
             {
@@ -556,10 +557,10 @@ namespace MyParser
         public MyLibrary.Collections.Properties GetUserFields(object id, object mappedId, string mappedTableName,
             object siteId)
         {
-            Debug.Assert(id != null && !string.IsNullOrEmpty(id.ToString()));
-            Debug.Assert(mappedId != null && !string.IsNullOrEmpty(mappedId.ToString()));
-            Debug.Assert(mappedTableName != null && !string.IsNullOrEmpty(mappedTableName));
-            Debug.Assert(siteId != null && !string.IsNullOrEmpty(siteId.ToString()));
+            Debug.Assert(id != null && !string.IsNullOrWhiteSpace(id.ToString()));
+            Debug.Assert(mappedId != null && !string.IsNullOrWhiteSpace(mappedId.ToString()));
+            Debug.Assert(mappedTableName != null && !string.IsNullOrWhiteSpace(mappedTableName));
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             var userFields = new MyLibrary.Collections.Properties();
             var internals = new StackListQueue<string>

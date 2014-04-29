@@ -8,7 +8,7 @@ namespace MyParser.Comparer
 {
     public class OnlyDatetimeComparer : IPublicationComparer
     {
-        public const string DateTimePatten = @"\#\#(?<date>[^\#]+)\#\#";
+        public const string DateTimePatten = @"(\#\#)?(?<date>[^\#]+)(\#\#)?";
 
         public int Compare(string x, string y)
         {
@@ -34,7 +34,7 @@ namespace MyParser.Comparer
         public bool IsValid(string s)
         {
             Match match = Regex.Match(s, DateTimePatten);
-            return match.Length > 0 && !string.IsNullOrEmpty(match.Groups["date"].Value.Trim());
+            return match.Length > 0 && !string.IsNullOrWhiteSpace(match.Groups["date"].Value.Trim());
         }
 
         public bool Equals(string x, string y)

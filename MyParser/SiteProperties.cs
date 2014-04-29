@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
+using MyLibrary.Attribute;
 
 namespace MyParser
 {
@@ -10,7 +12,46 @@ namespace MyParser
         /// <summary>
         ///     Идентификатор сайта
         /// </summary>
+        [Value]
         public object SiteId
+        {
+            get
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (!ContainsKey(propertyName)) Add(propertyName, string.Empty);
+                return this[propertyName];
+            }
+            set
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (ContainsKey(propertyName))
+                    this[propertyName] = value;
+                else
+                    Add(propertyName, value);
+            }
+        }
+
+        [Value]
+        public object PageSize
+        {
+            get
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (!ContainsKey(propertyName)) Add(propertyName, string.Empty);
+                return this[propertyName];
+            }
+            set
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (ContainsKey(propertyName))
+                    this[propertyName] = value;
+                else
+                    Add(propertyName, value);
+            }
+        }
+
+        [Value]
+        public object RubricActionLock
         {
             get
             {
@@ -31,6 +72,7 @@ namespace MyParser
         /// <summary>
         ///     Название сайта
         /// </summary>
+        [Value]
         public object SiteTitle
         {
             get
@@ -52,6 +94,7 @@ namespace MyParser
         /// <summary>
         ///     Url сайта
         /// </summary>
+        [Value]
         public object Url
         {
             get
@@ -73,6 +116,7 @@ namespace MyParser
         /// <summary>
         ///     Метод отправки запроса GET/POST
         /// </summary>
+        [Value]
         public object Method
         {
             get
@@ -91,6 +135,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object CompressionClassName
         {
             get
@@ -113,6 +158,7 @@ namespace MyParser
         /// <summary>
         ///     Шаблон формирования расширенного запроса
         /// </summary>
+        [Value]
         public object LookupTemplate
         {
             get
@@ -134,6 +180,7 @@ namespace MyParser
         /// <summary>
         ///     Шаблон формирования одиночного запроса
         /// </summary>
+        [Value]
         public object PublicationTemplate
         {
             get
@@ -155,6 +202,7 @@ namespace MyParser
         /// <summary>
         ///     Иля пользователя при отправке запроса к сайту
         /// </summary>
+        [Value]
         public object UserName
         {
             get
@@ -176,6 +224,7 @@ namespace MyParser
         /// <summary>
         ///     Пароль пользователя при отправке запроса к сайту
         /// </summary>
+        [Value]
         public object Password
         {
             get
@@ -197,6 +246,7 @@ namespace MyParser
         /// <summary>
         ///     Максимальное число возвращаемых объявлений
         /// </summary>
+        [Value]
         public object CountAd
         {
             get
@@ -218,6 +268,7 @@ namespace MyParser
         /// <summary>
         ///     Название класса из данной сборки, реализующего Icomparer для сравнения двух идентификаторов объявлений
         /// </summary>
+        [Value]
         public object PublicationComparerClassName
         {
             get
@@ -239,6 +290,7 @@ namespace MyParser
         /// <summary>
         ///     Название класса данной сборки
         /// </summary>
+        [Value]
         public object ModuleClassName
         {
             get
@@ -263,6 +315,7 @@ namespace MyParser
         ///     utf-8
         ///     ...
         /// </summary>
+        [Value]
         public object Encoding
         {
             get
@@ -281,7 +334,8 @@ namespace MyParser
             }
         }
 
-        public object ResourceIdTemplate
+        [Value]
+        public object ResourceTemplate
         {
             get
             {

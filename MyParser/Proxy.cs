@@ -1,5 +1,8 @@
 ﻿using System.Net;
 using System.Reflection;
+using MyLibrary;
+using MyLibrary.Attribute;
+using MyLibrary.Types;
 
 namespace MyParser
 {
@@ -14,6 +17,7 @@ namespace MyParser
         {
         }
 
+        [Value]
         public object Schema
         {
             get
@@ -32,6 +36,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object Address
         {
             get
@@ -50,6 +55,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object Port
         {
             get
@@ -76,7 +82,7 @@ namespace MyParser
 
         public override string ToString()
         {
-            return string.Format(@"{0}://{1}:{2}", "HTTP", Address, Port);
+            return String.Parse(new Transformation().ParseTemplate("http://{{Address}}:{{Port}}", ToValues()));
         }
     }
 }

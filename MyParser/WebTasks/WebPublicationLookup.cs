@@ -10,7 +10,7 @@ namespace MyParser.WebTasks
             ReturnFieldInfos.Add(Defaults.ReturnFieldInfos.Url);
             ReturnFieldInfos.Add(Defaults.ReturnFieldInfos.Email);
             ReturnFieldInfos.Add(Defaults.ReturnFieldInfos.Phone);
-            PublicationId = @"";
+            PublicationId = string.Empty;
         }
 
         public string PublicationId { get; set; }

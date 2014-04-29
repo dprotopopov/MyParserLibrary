@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 
 namespace MyParser
@@ -26,6 +27,7 @@ namespace MyParser
         {
         }
 
+        [Value]
         public new IEnumerable<string> Url
         {
             get
@@ -46,6 +48,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public IEnumerable<string> Method
         {
             get
@@ -66,6 +69,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public new IEnumerable<string> Id
         {
             get

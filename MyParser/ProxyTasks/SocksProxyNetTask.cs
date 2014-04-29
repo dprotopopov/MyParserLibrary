@@ -47,7 +47,7 @@ namespace MyParser.ProxyTasks
 
         public override string ToSql()
         {
-            Debug.Assert(!string.IsNullOrEmpty(InsertOrReplaceString));
+            Debug.Assert(!string.IsNullOrWhiteSpace(InsertOrReplaceString));
             Values values = ReturnFields.ToValues();
             values.Add(Database.SchemaColumn, Enumerable.Repeat("HTTPS", values.MaxCount));
             var sb = new StringBuilder();

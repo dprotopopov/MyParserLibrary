@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using MyLibrary;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyParser.ItemView;
 using MyParser.WebSessions;
@@ -90,7 +91,10 @@ namespace MyParser.WebTasks
             }
         }
 
+        [Value]
         public string Encoding { get; set; }
+
+        [Value]
         public string Compression { get; set; }
 
         /// <summary>
@@ -127,24 +131,53 @@ namespace MyParser.WebTasks
             throw new NotImplementedException();
         }
 
+        [Value]
         public IParser Parser { get; set; }
+
+        [Value]
         public ICrawler Crawler { get; set; }
+
+        [Value]
         public ITransformation Transformation { get; set; }
+
+        [Value]
         public ISessionManager SessionManager { get; set; }
+
+        [Value]
         public ITaskManager TaskManager { get; set; }
+
+        [Value]
         public IDatabase Database { get; set; }
 
         #region Аттрибуты
 
         public Thread Thread { get; set; }
+
+        [Value]
         public int Level { get; set; }
+
+        [Value]
         public string Url { get; set; }
+
+        [Value]
         public string Method { get; set; }
+
+        [Value]
         public string UserName { get; set; }
+
+        [Value]
         public string Password { get; set; }
+
+        [Value]
         public ReturnFieldInfos ReturnFieldInfos { get; set; }
+
+        [Value]
         public ReturnFields ReturnFields { get; set; }
+
+        [Value]
         public WebTaskStatus Status { get; set; }
+
+        [Value]
         public string Cookie { set; get; }
 
         #endregion

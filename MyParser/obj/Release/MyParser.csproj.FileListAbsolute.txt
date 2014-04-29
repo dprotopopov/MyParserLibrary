@@ -8,11 +8,6 @@ D:\Projects\MyParserLibrary\MyParser\bin\Release\HtmlAgilityPack.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\ICSharpCode.SharpZipLib.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\MyDatabase.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\MyLibrary.dll
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Common.dll
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Interfaces.dll
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.OrmLite.dll
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.OrmLite.SqliteNET.dll
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Text.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.EF6.dll
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.Linq.dll
@@ -24,11 +19,6 @@ D:\Projects\MyParserLibrary\MyParser\bin\Release\EntityFramework.xml
 D:\Projects\MyParserLibrary\MyParser\bin\Release\EntityFramework.SqlServer.xml
 D:\Projects\MyParserLibrary\MyParser\bin\Release\HtmlAgilityPack.pdb
 D:\Projects\MyParserLibrary\MyParser\bin\Release\HtmlAgilityPack.xml
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Common.pdb
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Common.xml
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Interfaces.pdb
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Interfaces.xml
-D:\Projects\MyParserLibrary\MyParser\bin\Release\ServiceStack.Text.xml
 D:\Projects\MyParserLibrary\MyParser\bin\Release\System.Data.SQLite.xml
 D:\Projects\MyParserLibrary\MyParser\obj\Release\MyParser.csprojResolveAssemblyReference.cache
 D:\Projects\MyParserLibrary\MyParser\obj\Release\MyParser.Properties.Resources.resources

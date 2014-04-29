@@ -1,9 +1,11 @@
 ﻿using System.Reflection;
+using MyLibrary.Attribute;
 
 namespace MyParser
 {
     public class BuilderInfo : MyLibrary.Collections.Properties, IValueable
     {
+        [Value]
         public object SiteId
         {
             get
@@ -22,6 +24,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object Method
         {
             get
@@ -40,6 +43,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object RequestTemplate
         {
             get
@@ -58,6 +62,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object TableName
         {
             get
@@ -76,6 +81,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object Flags
         {
             get
@@ -94,6 +100,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object UrlTemplate
         {
             get
@@ -112,6 +119,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object KeyXPathTemplate
         {
             get
@@ -130,6 +138,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object ValueXPathTemplate
         {
             get
@@ -148,6 +157,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object KeyResultTemplate
         {
             get
@@ -166,6 +176,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object ValueResultTemplate
         {
             get
@@ -184,6 +195,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object KeyRegexPattern
         {
             get
@@ -202,6 +214,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object KeyRegexReplacement
         {
             get
@@ -220,6 +233,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object ValueRegexPattern
         {
             get
@@ -238,6 +252,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object ValueRegexReplacement
         {
             get
@@ -256,6 +271,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object IdTemplate
         {
             get

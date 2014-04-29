@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Forms;
+using MyLibrary.Attribute;
 
 namespace MyParser
 {
@@ -13,6 +14,7 @@ namespace MyParser
         /// <summary>
         ///     Идентификатор сайта
         /// </summary>
+        [Value]
         public object SiteId
         {
             get
@@ -34,6 +36,7 @@ namespace MyParser
         /// <summary>
         ///     Идентификатор возвращаемого поля
         /// </summary>
+        [Value]
         public object ReturnFieldId
         {
             get
@@ -55,6 +58,7 @@ namespace MyParser
         /// <summary>
         ///     Xpath для нахождения поля на загруженной странице
         /// </summary>
+        [Value]
         public object ReturnFieldXpathTemplate
         {
             get
@@ -76,6 +80,7 @@ namespace MyParser
         /// <summary>
         ///     Шаблон возвращаемого найденого текста
         /// </summary>
+        [Value]
         public object ReturnFieldResultTemplate
         {
             get
@@ -98,6 +103,7 @@ namespace MyParser
         ///     Шаблон регулярного выражения,
         ///     используемого при замене найденого текста
         /// </summary>
+        [Value]
         public object ReturnFieldRegexPattern
         {
             get
@@ -120,6 +126,7 @@ namespace MyParser
         ///     Шаблон для замены у регулярного выражения,
         ///     используемого при замене найденого текста
         /// </summary>
+        [Value]
         public object ReturnFieldRegexReplacement
         {
             get
@@ -152,16 +159,6 @@ namespace MyParser
             viewItem.SubItems.Add(ReturnFieldRegexPattern.ToString());
             viewItem.SubItems.Add(ReturnFieldRegexReplacement.ToString());
             return viewItem;
-        }
-
-        /// <summary>
-        ///     Стандартный конвертер содержания в строку
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return string.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", SiteId, ReturnFieldId, ReturnFieldXpathTemplate,
-                ReturnFieldResultTemplate, ReturnFieldRegexPattern, ReturnFieldRegexReplacement);
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MyLibrary;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.Comparer;
 using MyLibrary.LastError;
@@ -259,7 +260,7 @@ namespace MyParser
                     contains &&
                     levelMapping.ContainsKey(i) && MyDatabase.Database.ConvertTo<long>(levelMapping[i]) > 1 &&
                     parentMapping.ContainsKey(i) && (i = parentMapping[i]) != null &&
-                    !string.IsNullOrEmpty(i.ToString())
+                    !string.IsNullOrWhiteSpace(i.ToString())
                     );
                 string value = string.Join("::", list);
                 dictionary.Add(key, value);
@@ -568,7 +569,7 @@ namespace MyParser
                     s => LevenshteinDistance.FindNeighbour(s, good, MaxDistance));
                 foreach (
                     var pair in
-                        dictionary.Where(pair => !string.IsNullOrEmpty(pair.Key) && !string.IsNullOrEmpty(pair.Value)))
+                        dictionary.Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value)))
                 {
                     map[pair.Key] = new KeyValuePair<StackListQueue<object>, StackListQueue<object>>(map[pair.Key].Key,
                         map[pair.Value].Value);
@@ -612,7 +613,7 @@ namespace MyParser
                 using (SQLiteCommand command = Database.Connection.CreateCommand())
                 {
                     string commandText = commandString.Trim();
-                    if (!string.IsNullOrEmpty(commandText))
+                    if (!string.IsNullOrWhiteSpace(commandText))
                     {
                         command.CommandText = commandText;
                         command.ExecuteNonQuery();
@@ -731,31 +732,17 @@ namespace MyParser
                     MyLibrary.Types.Regex.Escape(
                         MyLibrary.Types.Regex.Escape(Parser.SplitChar.ToString(CultureInfo.InvariantCulture))));
 
-                string keyXPathTemplate = (keyXPathTemplates != null && keyXPathTemplates.Length > currentLevel)
-                    ? keyXPathTemplates[currentLevel]
-                    : builderInfo.KeyXPathTemplate.ToString();
-                string valueXPathTemplate = (valueXPathTemplates != null && valueXPathTemplates.Length > currentLevel)
-                    ? valueXPathTemplates[currentLevel]
-                    : builderInfo.ValueXPathTemplate.ToString();
-                string keyResultTemplate = (keyResultTemplates != null && keyResultTemplates.Length > currentLevel)
-                    ? keyResultTemplates[currentLevel]
-                    : builderInfo.KeyResultTemplate.ToString();
-                string valueResultTemplate = (valueResultTemplates != null && valueResultTemplates.Length > currentLevel)
-                    ? valueResultTemplates[currentLevel]
-                    : builderInfo.ValueResultTemplate.ToString();
-                string keyRegexPattern = (keyRegexPatterns != null && keyRegexPatterns.Length > currentLevel)
-                    ? keyRegexPatterns[currentLevel]
-                    : builderInfo.KeyRegexPattern.ToString();
-                string valueRegexPattern = (valueRegexPatterns != null && valueRegexPatterns.Length > currentLevel)
-                    ? valueRegexPatterns[currentLevel]
-                    : builderInfo.ValueRegexPattern.ToString();
-                string keyRegexReplacement = (keyRegexReplacements != null && keyRegexReplacements.Length > currentLevel)
-                    ? keyRegexReplacements[currentLevel]
-                    : builderInfo.KeyRegexReplacement.ToString();
-                string valueRegexReplacement = (valueRegexReplacements != null &&
-                                                valueRegexReplacements.Length > currentLevel)
-                    ? valueRegexReplacements[currentLevel]
-                    : builderInfo.ValueRegexReplacement.ToString();
+                string keyXPathTemplate = keyXPathTemplates[Math.Min(currentLevel, keyXPathTemplates.Length - 1)];
+                string valueXPathTemplate = valueXPathTemplates[Math.Min(currentLevel, valueXPathTemplates.Length - 1)];
+                string keyResultTemplate = keyResultTemplates[Math.Min(currentLevel, keyResultTemplates.Length - 1)];
+                string valueResultTemplate =
+                    valueResultTemplates[Math.Min(currentLevel, valueResultTemplates.Length - 1)];
+                string keyRegexPattern = keyRegexPatterns[Math.Min(currentLevel, keyRegexPatterns.Length - 1)];
+                string valueRegexPattern = valueRegexPatterns[Math.Min(currentLevel, valueRegexPatterns.Length - 1)];
+                string keyRegexReplacement =
+                    keyRegexReplacements[Math.Min(currentLevel, keyRegexReplacements.Length - 1)];
+                string valueRegexReplacement =
+                    valueRegexReplacements[Math.Min(currentLevel, valueRegexReplacements.Length - 1)];
 
                 var returnFieldInfos = new ReturnFieldInfos();
 
@@ -802,9 +789,7 @@ namespace MyParser
                     slice.Url = new StackListQueue<string> {uri.ToString()};
 
                     string[] requestTemplates = builderInfo.RequestTemplate.ToString().Split(Parser.SplitChar);
-                    string requestTemplate = (requestTemplates != null && requestTemplates.Length > currentLevel)
-                        ? requestTemplates[currentLevel]
-                        : builderInfo.RequestTemplate.ToString();
+                    string requestTemplate = requestTemplates[Math.Min(currentLevel, requestTemplates.Length - 1)];
                     Crawler.Request = String.Parse(Transformation.ParseTemplate(requestTemplate, slice));
 
                     IEnumerable<HtmlDocument> documents =
@@ -886,10 +871,8 @@ namespace MyParser
                             currentValues.Value = currentOptions;
                             currentValues.Title = new StackListQueue<string>();
                             string[] currentUrlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
-                            string currentUrlTemplate = (currentUrlTemplates != null &&
-                                                         currentUrlTemplates.Length > currentLevel + 1)
-                                ? currentUrlTemplates[currentLevel + 1]
-                                : builderInfo.UrlTemplate.ToString();
+                            string currentUrlTemplate =
+                                currentUrlTemplates[Math.Min(currentLevel + 1, currentUrlTemplates.Length - 1)];
                             currentValues.Url = Transformation.ParseTemplate(currentUrlTemplate, currentValues).ToList();
                             stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel + 1, currentValues));
                             Total += currentValues.MaxCount;

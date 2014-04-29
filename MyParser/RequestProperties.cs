@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using MyLibrary.Attribute;
 
 namespace MyParser
 {
@@ -18,6 +20,7 @@ namespace MyParser
         {
         }
 
+        [Value]
         public object Site
         {
             get
@@ -37,13 +40,14 @@ namespace MyParser
         }
 
 
-        public object PublicationDatetime
+        [Value]
+        public DateTime PublicationDatetime
         {
             get
             {
                 string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
-                if (!ContainsKey(propertyName)) Add(propertyName, 0);
-                return this[propertyName];
+                if (!ContainsKey(propertyName)) Add(propertyName, MyLibrary.Types.DateTime.Default);
+                return (DateTime) this[propertyName];
             }
             set
             {
@@ -55,6 +59,7 @@ namespace MyParser
             }
         }
 
+        [Value]
         public object PublicationId
         {
             get

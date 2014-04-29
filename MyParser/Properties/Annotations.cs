@@ -204,7 +204,7 @@ namespace MyParser.Annotations
     ///         <item>
     ///             <code>
     /// [ContractAnnotation("s:null => true")]
-    /// public bool IsNullOrEmpty(string s) // string.IsNullOrEmpty()
+    /// public bool IsNullOrWhiteSpace(string s) // string.IsNullOrWhiteSpace()
     /// </code>
     ///         </item>
     ///         <item>

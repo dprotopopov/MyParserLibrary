@@ -16,12 +16,8 @@ namespace MyParser
 
         public override string ToString()
         {
-            var values = new Values
-            {
-                Key = Keys.ToList(),
-                Value = this.Select(item => item.ToString()).ToList(),
-            };
-            return String.Parse(new Transformation().ParseTemplate(values));
+            return
+                String.Parse(new Transformation().ParseTemplate(new Values(Keys, this.Select(item => item.ToString()))));
         }
 
         public void Add(BuilderInfo builderInfo)

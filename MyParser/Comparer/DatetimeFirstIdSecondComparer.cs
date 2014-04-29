@@ -1,4 +1,5 @@
-﻿using MyLibrary.Comparer;
+﻿using System.Linq;
+using MyLibrary.Types;
 
 namespace MyParser.Comparer
 {
@@ -22,9 +23,10 @@ namespace MyParser.Comparer
 
         public bool IsValid(string s)
         {
-            var resource = new Resource(s);
-            return DecimalComparer.IsValid(resource.PublicationId.ToString()) &&
-                   DatetimeComparer.IsValid(resource.PublicationDatetime.ToString());
+            var properties = new MyLibrary.Collections.Properties(s);
+            return _propertyNames.Aggregate(true, (current, p) => Boolean.And(current, properties[p] != null))
+                   && DecimalComparer.IsValid(properties["PublicationId"].ToString()) &&
+                   DatetimeComparer.IsValid(properties["PublicationDatetime"].ToString());
         }
 
         public bool Equals(string x, string y)

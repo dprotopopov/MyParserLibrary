@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using MyLibrary.Attribute;
 using MyLibrary.Collections;
 
 namespace MyParser
@@ -13,6 +15,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public IEnumerable<string> PublicationId
         {
             get
@@ -34,6 +37,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public IEnumerable<string> Url
         {
             get
@@ -55,6 +59,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public IEnumerable<string> OtherPageUrl
         {
             get
@@ -76,6 +81,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public IEnumerable<string> Email
         {
             get
@@ -97,6 +103,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public IEnumerable<string> Phone
         {
             get
@@ -118,6 +125,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public new IEnumerable<string> Option
         {
             get
@@ -139,6 +147,7 @@ namespace MyParser
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>
+        [Value]
         public new IEnumerable<string> Value
         {
             get

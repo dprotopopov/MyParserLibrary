@@ -24,7 +24,7 @@ namespace MyParser.ProxyTasks
 
         public override string ToSql()
         {
-            Debug.Assert(!string.IsNullOrEmpty(InsertOrReplaceString));
+            Debug.Assert(!string.IsNullOrWhiteSpace(InsertOrReplaceString));
             var sb = new StringBuilder();
             sb.AppendLine(string.Format("CREATE TABLE IF NOT EXISTS {0}(", Database.ProxyTable));
             sb.AppendLine(string.Format("{0} VARCHAR,", Database.SchemaColumn));

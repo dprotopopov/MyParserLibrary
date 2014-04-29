@@ -77,11 +77,6 @@ namespace MyParser
             get { return typeof (Defaults).Namespace; }
         }
 
-        public static string ModuleNamespace
-        {
-            get { return typeof (Defaults).Namespace; }
-        }
-
         public static ObjectComparer ObjectComparer
         {
             get { return new ObjectComparer(); }
@@ -119,21 +114,12 @@ namespace MyParser
 
         public static CompressionManager CompressionManager
         {
-            get
-            {
-                return new CompressionManager();
-            }
+            get { return new CompressionManager(); }
         }
 
         public static ComparerManager ComparerManager
         {
-            get
-            {
-                return new ComparerManager
-                {
-                    ModuleNamespace = ModuleNamespace,
-                };
-            }
+            get { return new ComparerManager(); }
         }
 
         public static Parser Parser
