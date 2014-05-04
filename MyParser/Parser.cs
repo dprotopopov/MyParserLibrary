@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -164,7 +165,7 @@ namespace MyParser
                 value = propertyInfo != null ? propertyInfo.GetValue(value, null) : null;
                 if (value == null) return null;
             }
-            return (string) value;
+            return WebUtility.HtmlDecode((string) value);
         }
 
         /// <summary>

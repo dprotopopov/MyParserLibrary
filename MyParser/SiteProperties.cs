@@ -9,6 +9,28 @@ namespace MyParser
     public class SiteProperties : MyLibrary.Collections.Properties, IValueable
     {
         /// <summary>
+        ///     Шаблон формирования расширенного запроса
+        /// </summary>
+        [Value]
+        public object LookupRequestTemplate
+        {
+            get
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (!ContainsKey(propertyName)) Add(propertyName, string.Empty);
+                return this[propertyName];
+            }
+            set
+            {
+                string propertyName = MethodBase.GetCurrentMethod().Name.Substring(4);
+                if (ContainsKey(propertyName))
+                    this[propertyName] = value;
+                else
+                    Add(propertyName, value);
+            }
+        }
+
+        /// <summary>
         ///     Идентификатор сайта
         /// </summary>
         [Value]
@@ -135,7 +157,7 @@ namespace MyParser
         ///     Метод отправки запроса GET/POST
         /// </summary>
         [Value]
-        public object Method
+        public object LookupMethod
         {
             get
             {
