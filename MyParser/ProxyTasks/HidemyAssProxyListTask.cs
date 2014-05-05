@@ -56,7 +56,7 @@ namespace MyParser.ProxyTasks
             base.Reset();
             Page = ReturnFields.MaxCount == 0
                 ? string.Empty
-                : string.Format("{0}", Int32.Parse(Page) + 1);
+                : string.Format("{0}", Int32.ParseAsString(Page) + 1);
         }
     }
 }

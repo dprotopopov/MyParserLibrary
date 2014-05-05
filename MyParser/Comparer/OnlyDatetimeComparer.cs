@@ -21,7 +21,7 @@ namespace MyParser.Comparer
             foreach (Match match in matches)
                 try
                 {
-                    values.Add(MyLibrary.Types.DateTime.Parse(match.Groups["date"].Value.Trim()));
+                    values.Add(MyLibrary.Types.DateTime.ParseAsString(match.Groups["date"].Value.Trim()));
                 }
                 catch (Exception exception)
                 {
@@ -48,7 +48,7 @@ namespace MyParser.Comparer
             DateTime dateTime;
             try
             {
-                dateTime = MyLibrary.Types.DateTime.Parse(match.Groups["date"].Value.Trim());
+                dateTime = MyLibrary.Types.DateTime.ParseAsString(match.Groups["date"].Value.Trim());
             }
             catch (Exception exception)
             {
