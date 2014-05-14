@@ -14,8 +14,8 @@ namespace MyParser.Comparer
         {
             var resource = new Resource(x);
             var resource1 = new Resource(y);
-            int value = DatetimeComparer.Compare(resource.PublicationDatetime.ToString(),
-                resource1.PublicationDatetime.ToString());
+            int value = DatetimeComparer.Compare(string.Format("##{0}##", resource.PublicationDatetime),
+                string.Format("##{0}##", resource1.PublicationDatetime));
             return value != 0
                 ? value
                 : DecimalComparer.Compare(resource.PublicationId.ToString(), resource1.PublicationId.ToString());
@@ -26,7 +26,7 @@ namespace MyParser.Comparer
             var properties = new MyLibrary.Collections.Properties(s);
             return _propertyNames.Aggregate(true, (current, p) => Boolean.And(current, properties[p] != null))
                    && DecimalComparer.IsValid(properties["PublicationId"].ToString()) &&
-                   DatetimeComparer.IsValid(properties["PublicationDatetime"].ToString());
+                   DatetimeComparer.IsValid(string.Format("##{0}##", properties["PublicationDatetime"]));
         }
 
         public bool Equals(string x, string y)

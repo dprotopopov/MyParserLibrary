@@ -8,7 +8,7 @@ namespace MyParser.Comparer
 {
     public class OnlyDatetimeComparer : IPublicationComparer
     {
-        public const string DateTimePatten = @"(\#\#)?(?<date>[^\#]+)(\#\#)?";
+        public const string DateTimePatten = @"\#\#(?<date>[^\#]+)\#\#";
 
         public int Compare(string x, string y)
         {

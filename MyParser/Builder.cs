@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MyLibrary;
-using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.Comparer;
 using MyLibrary.LastError;
@@ -569,7 +568,8 @@ namespace MyParser
                     s => LevenshteinDistance.FindNeighbour(s, good, MaxDistance));
                 foreach (
                     var pair in
-                        dictionary.Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value)))
+                        dictionary.Where(
+                            pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value)))
                 {
                     map[pair.Key] = new KeyValuePair<StackListQueue<object>, StackListQueue<object>>(map[pair.Key].Key,
                         map[pair.Value].Value);

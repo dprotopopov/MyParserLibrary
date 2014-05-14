@@ -131,6 +131,7 @@
     </Compile>
     <Compile Include="Comparer\IdComparer.cs" />
     <Compile Include="Comparer\IPublicationComparer.cs" />
+    <Compile Include="Comparer\NoComparer.cs" />
     <Compile Include="Comparer\ObjectComparer.cs" />
     <Compile Include="Comparer\OnlyDatetimeComparer.cs">
       <SubType>Code</SubType>
