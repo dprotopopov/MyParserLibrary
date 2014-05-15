@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using HtmlAgilityPack;
-using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.Lock;
 using MyLibrary.Trace;
@@ -56,6 +54,7 @@ namespace MyParser
         /// </summary>
         public StackListQueue<HtmlDocument> WebRequestHtmlDocument(Uri uri, IWebSession webSession)
         {
+            Debug.WriteLine("uri: {0}", uri);
             long current = 0;
             long total = 1;
             var collection = new StackListQueue<HtmlDocument>();
@@ -90,7 +89,7 @@ namespace MyParser
 
                         using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                         {
-                            Debug.WriteLine("Request: {0}", Request);
+                            Debug.WriteLine(string.Format("Request: {0}", Request));
                             streamWriter.Write(Request);
                             streamWriter.Flush();
                         }

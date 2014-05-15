@@ -194,7 +194,7 @@ namespace MyParser
                     GridItems.Select(item => item.Value.Key.ToString()).ToList()
                 },
             };
-            IEnumerable<string> commandTexts = Transformation.ParseTemplate(insertOrReplaceString, values);
+            IEnumerable<string> commandTexts = Transformation.ParseTemplate(insertOrReplaceString, values.SqlEscape());
 
             AppendLineCallback("BEGIN;");
             foreach (string commandText in commandTexts)
@@ -252,9 +252,7 @@ namespace MyParser
                 object i = key;
                 var list = new StackListQueue<string>();
                 do
-                {
-                    if (titleMapping.ContainsKey(i)) list.Add(titleMapping[i].ToString());
-                } while
+                    if (titleMapping.ContainsKey(i)) list.Add(titleMapping[i].ToString()); while
                     (
                     contains &&
                     levelMapping.ContainsKey(i) && MyDatabase.Database.ConvertTo<long>(levelMapping[i]) > 1 &&
@@ -667,24 +665,21 @@ namespace MyParser
             BuilderInfos builderInfos = Database.GetBuilderInfos(SiteId);
             BuilderInfo builderInfo = builderInfos[TableName.ToString()];
             Crawler.Method = builderInfo.Method.ToString();
-            Crawler.Encoding = siteProperties.Encoding.ToString();
-            Crawler.Compression = siteProperties.CompressionClassName.ToString();
+            Crawler.Encoding = builderInfo.Encoding.ToString();
+            Crawler.Compression = builderInfo.Compression.ToString();
             ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
 
             var baseValues = new Values
             {
-                Table = new StackListQueue<string> {TableName.ToString()},
+                {"Table", new StackListQueue<string>(TableName.ToString())},
+                {"Value", new StackListQueue<string>(string.Empty)},
+                {"Value[0]", new StackListQueue<string>(string.Empty)},
+                {"Option[0]", new StackListQueue<string>(string.Empty)}
             };
 
-            string[] urlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
-            string urlTemplate = (urlTemplates != null && urlTemplates.Length > 1)
-                ? urlTemplates[1]
-                : builderInfo.UrlTemplate.ToString();
+            Debug.WriteLine("baseValues {0}", baseValues);
 
-
-            baseValues.Url = Transformation.ParseTemplate(urlTemplate, baseValues);
-
-            var baseBuilder = new UriBuilder(String.Parse(baseValues.Url))
+            var baseBuilder = new UriBuilder(siteProperties.Url.ToString())
             {
                 UserName = siteProperties.UserName.ToString(),
                 Password = siteProperties.Password.ToString(),
@@ -707,13 +702,27 @@ namespace MyParser
                 KeyValuePair<int, Values> dequeue = stackListQueue.Dequeue();
                 Values parentValues = dequeue.Value;
                 int currentLevel = dequeue.Key;
-                Match option = matches[currentLevel - 1];
-                string optionValue = option.Groups[Transformation.NameGroup].Value;
-
+                string optionName = matches[currentLevel - 1].Groups[Transformation.NameGroup].Value;
                 int parentCount = parentValues.MaxCount;
 
-                parentValues.Option = Enumerable.Repeat(optionValue, parentCount).ToList();
+                parentValues.Option = new StackListQueue<string>(Enumerable.Repeat(optionName, parentCount));
+                foreach (string s in new[] {"Option", "Value"})
+                {
+                    parentValues.Add(string.Format("{1}[{0}]", -currentLevel, s),
+                        parentValues[string.Format("{1}[{0}]", 1 - currentLevel, s)]);
+                    for (int i = currentLevel - 1; i >= 1; i--)
+                        parentValues[string.Format("{1}[{0}]", -i, s)] =
+                            parentValues[string.Format("{1}[{0}]", 1 - i, s)];
+                    parentValues[string.Format("{0}[0]", s)] = parentValues[s];
+                }
                 Debug.WriteLine("parentValues {0}:{1}", currentLevel, parentValues);
+
+                if (!parentValues.Url.Any())
+                {
+                    string[] urlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
+                    string urlTemplate = urlTemplates[Math.Min(currentLevel, urlTemplates.Length - 1)];
+                    parentValues.Url = Transformation.ParseTemplate(urlTemplate, parentValues);
+                }
 
                 string[] keyXPathTemplates = builderInfo.KeyXPathTemplate.ToString().Split(Parser.SplitChar);
                 string[] valueXPathTemplates = builderInfo.ValueXPathTemplate.ToString().Split(Parser.SplitChar);
@@ -772,22 +781,22 @@ namespace MyParser
                             ReturnFieldRegexReplacement = pair.Value[3],
                         });
 
-                Debug.WriteLine("returnFieldInfos {0}:{1}", currentLevel, returnFieldInfos);
+                Debug.WriteLine("returnFieldInfosTemplate {0}:{1}", currentLevel, returnFieldInfos);
 
-                List<string> parentIds =
+                List<string> parentIds = new StackListQueue<string>(
                     Transformation.ParseTemplate(builderInfo.IdTemplate.ToString(), new Values
                     {
-                        parentValues.Where(pair => string.CompareOrdinal(pair.Key, optionValue) != 0)
+                        parentValues.Where(pair => string.CompareOrdinal(pair.Key, optionName) != 0)
                     })
-                        .Select(s => s.ToLower())
-                        .ToList();
+                        .Select(s => s.ToLower()));
 
                 for (int i = 0; i < parentCount; i++)
                 {
                     Values slice = parentValues.Slice(i);
+                    Debug.WriteLine("slice {0}:{1}:{2}", currentLevel, i, slice);
+
                     Uri uri = MyLibrary.Types.Uri.Combine(baseBuilder.Uri.ToString(), slice.Url.First());
                     slice.Url = new StackListQueue<string> {uri.ToString()};
-
                     string[] requestTemplates = builderInfo.RequestTemplate.ToString().Split(Parser.SplitChar);
                     string requestTemplate = requestTemplates[Math.Min(currentLevel, requestTemplates.Length - 1)];
                     Crawler.Request = String.Parse(Transformation.ParseTemplate(requestTemplate, slice));
@@ -796,26 +805,27 @@ namespace MyParser
                         Crawler.WebRequestHtmlDocument(uri, new WebSession());
 
                     ReturnFields returnFields = Parser.BuildReturnFields(documents,
-                        slice, returnFieldInfos);
+                        slice,
+                        returnFieldInfos);
 
-                    returnFields.Option =
+                    returnFields.Option = new StackListQueue<string>(
                         returnFields.Option.Select(
                             seed =>
                                 OptionPatches.Aggregate(seed,
                                     (current, patch) =>
-                                        new Regex(patch.Key, RegexOptions.IgnoreCase).Replace(current, patch.Value)));
-                    returnFields.Value =
+                                        new Regex(patch.Key, RegexOptions.IgnoreCase).Replace(current, patch.Value))));
+                    returnFields.Value = new StackListQueue<string>(
                         returnFields.Value.Select(
                             seed =>
                                 ValuePatches.Aggregate(seed,
                                     (current, patch) =>
-                                        new Regex(patch.Key, RegexOptions.IgnoreCase).Replace(current, patch.Value)));
+                                        new Regex(patch.Key, RegexOptions.IgnoreCase).Replace(current, patch.Value))));
                     Debug.WriteLine("returnFields {0}:{1}:{2}", currentLevel, i, returnFields);
 
-                    List<string> options = returnFields.Value.ToList();
-                    List<string> titles = returnFields.Title.ToList();
-                    List<string> optionRedirect = returnFields.OptionRedirect.ToList();
-                    List<string> valueRedirect = returnFields.ValueRedirect.ToList();
+                    var options = new StackListQueue<string>(returnFields.Value);
+                    var titles = new StackListQueue<string>(returnFields.Title);
+                    var optionRedirect = new StackListQueue<string>(returnFields.OptionRedirect);
+                    var valueRedirect = new StackListQueue<string>(returnFields.ValueRedirect);
 
                     int keyCount = Math.Min(options.Count, titles.Count);
                     if (keyCount > 0)
@@ -825,38 +835,51 @@ namespace MyParser
                         var currentValues = new Values();
                         if (string.CompareOrdinal(flags[currentLevel], @"?") == 0)
                         {
-                            currentOptions.Add(parentIds[i].Split(Parser.SplitChar)[currentLevel - 1]);
+                            currentOptions.Add(slice.Value.First());
                             foreach (var pair in slice.Where(pair => pair.Value.Any()))
-                                currentValues.Add(pair.Key, Enumerable.Repeat(pair.Value.First(), keyCount + 1).ToList());
+                                currentValues.Add(pair.Key,
+                                    new StackListQueue<string>(Enumerable.Repeat(pair.Value.First(), keyCount + 1)));
+                            foreach (string s in new[] {"Option", "Value"})
+                                currentValues[string.Format("{0}[0]", s)] =
+                                    new StackListQueue<string>(
+                                        new StackListQueue<string>(currentValues[string.Format("{0}[0]", s)]).GetRange(
+                                            0, keyCount))
+                                    {
+                                        currentValues[string.Format("{0}[-1]", s)].ElementAt(keyCount)
+                                    };
                         }
                         else
                         {
                             foreach (var pair in slice.Where(pair => pair.Value.Any()))
-                                currentValues.Add(pair.Key, Enumerable.Repeat(pair.Value.First(), keyCount).ToList());
+                                currentValues.Add(pair.Key,
+                                    new StackListQueue<string>(Enumerable.Repeat(pair.Value.First(), keyCount)));
                         }
 
-                        if (currentValues.ContainsKey(optionValue)) currentValues[optionValue] = currentOptions;
-                        else currentValues.Add(optionValue, currentOptions);
+                        currentValues.Add(optionName, new StackListQueue<string>(currentOptions).GetRange(
+                            0, keyCount));
 
-                        List<string> ids = Transformation.ParseTemplate(builderInfo.IdTemplate.ToString(),
-                            currentValues).Select(s => s.ToLower()).ToList();
+                        var ids =
+                            new StackListQueue<string>(Transformation.ParseTemplate(builderInfo.IdTemplate.ToString(),
+                                currentValues).Select(s => s.ToLower()));
                         var items = new Values
                         {
                             {
                                 siteIdPattern,
-                                Enumerable.Repeat(SiteId.ToString(), keyCount).ToList()
+                                new StackListQueue<string>(Enumerable.Repeat(SiteId.ToString(), keyCount))
                             },
                             {siteTableIdPattern, ids.GetRange(0, keyCount)},
                             {siteTableTitlePattern, currentTitles},
-                            {parentIdPattern, Enumerable.Repeat(parentIds[i], keyCount).ToList()},
+                            {parentIdPattern, new StackListQueue<string>(Enumerable.Repeat(parentIds[i], keyCount))},
                             {
                                 levelPattern,
-                                Enumerable.Repeat(currentLevel.ToString(CultureInfo.InvariantCulture),
-                                    keyCount).ToList()
+                                new StackListQueue<string>(
+                                    Enumerable.Repeat(currentLevel.ToString(CultureInfo.InvariantCulture),
+                                        keyCount))
                             },
                         };
 
-                        IEnumerable<string> commandTexts = Transformation.ParseTemplate(insertOrReplaceString, items);
+                        IEnumerable<string> commandTexts = Transformation.ParseTemplate(insertOrReplaceString,
+                            items.SqlEscape());
                         Debug.Assert(commandTexts.Count() == keyCount);
                         Total += commandTexts.Count();
                         foreach (string commandText in commandTexts)
@@ -870,10 +893,7 @@ namespace MyParser
                         {
                             currentValues.Value = currentOptions;
                             currentValues.Title = new StackListQueue<string>();
-                            string[] currentUrlTemplates = builderInfo.UrlTemplate.ToString().Split(Parser.SplitChar);
-                            string currentUrlTemplate =
-                                currentUrlTemplates[Math.Min(currentLevel + 1, currentUrlTemplates.Length - 1)];
-                            currentValues.Url = Transformation.ParseTemplate(currentUrlTemplate, currentValues).ToList();
+                            currentValues.Remove("Url");
                             stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel + 1, currentValues));
                             Total += currentValues.MaxCount;
                         }
@@ -894,8 +914,8 @@ namespace MyParser
                         foreach (var pair in slice.Where(pair => pair.Value.Any()))
                             redirectValues.Add(pair.Key,
                                 Enumerable.Repeat(pair.Value.First(), countRedirect).ToList());
-                        if (redirectValues.ContainsKey(optionValue)) redirectValues[optionValue] = redirectOptions;
-                        else redirectValues.Add(optionValue, redirectOptions);
+                        if (redirectValues.ContainsKey(optionName)) redirectValues[optionName] = redirectOptions;
+                        else redirectValues.Add(optionName, redirectOptions);
                         redirectValues.Url = optionRedirect;
                         redirectValues.Value = redirectOptions;
                         redirectValues.Title = redirectTitles;

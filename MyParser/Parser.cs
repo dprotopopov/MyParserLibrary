@@ -37,54 +37,72 @@ namespace MyParser
         public ReturnFields BuildReturnFields(IEnumerable<HtmlDocument> parentDocuments, Values parentValues,
             ReturnFieldInfos returnFieldInfos)
         {
+            var progress = new object();
             var returnFields = new ReturnFields();
             long current = 0;
-            long total = returnFieldInfos.ToList().Count*(parentDocuments.Count() + 1);
-            foreach (ReturnFieldInfo returnFieldInfo in returnFieldInfos.ToList())
+            long total = returnFieldInfos.ToList().Count*parentDocuments.Count()*parentValues.MaxCount;
+            Parallel.ForEach(returnFieldInfos.ToList(), returnFieldInfo =>
             {
-                var agregated = new Values();
-                foreach (HtmlDocument document in parentDocuments)
+                IEnumerable<string> ids =
+                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldId.ToString(),
+                        parentValues, false);
+                IEnumerable<string> xpaths =
+                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldXpathTemplate.ToString(),
+                        parentValues, false);
+                IEnumerable<string> results =
+                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldResultTemplate.ToString(),
+                        parentValues, true);
+                IEnumerable<string> patterns =
+                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldRegexPattern.ToString(),
+                        parentValues, true);
+                IEnumerable<string> replacements =
+                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldRegexReplacement.ToString(),
+                        parentValues, true);
+                for (int i = 0; i < parentValues.MaxCount; i++)
                 {
-                    var values = new Values(parentValues);
-                    IEnumerable<string> xpaths =
-                        Transformation.ParseTemplate(returnFieldInfo.ReturnFieldXpathTemplate.ToString(),
-                            parentValues);
-
-                    foreach (
-                        HtmlNode htmlNode in
-                            xpaths.Select(xpath => document.DocumentNode.SelectNodes(xpath))
-                                .Where(nodes => nodes != null)
-                                .SelectMany(nodes => nodes))
+                    string id = ids.ElementAt(i);
+                    string xpath = xpaths.ElementAt(i);
+                    string result = results.ElementAt(i);
+                    string pattern = patterns.ElementAt(i);
+                    string replacement = replacements.ElementAt(i);
+                    var agregated = new Values();
+                    foreach (HtmlDocument document in parentDocuments)
                     {
-                        values.Add(BuildValues(returnFieldInfo.ReturnFieldResultTemplate.ToString(), htmlNode));
+                        var values = new Values(parentValues);
+
+                        try
+                        {
+                            foreach (HtmlNode htmlNode in document.DocumentNode.SelectNodes(xpath))
+                                values.Add(BuildValues(result, htmlNode));
+                        }
+                        catch (Exception exception)
+                        {
+                            Debug.WriteLine(exception);
+                            LastError = exception;
+                        }
+                        foreach (var pair in values)
+                            if (!agregated.ContainsKey((pair.Key))) agregated.Add(pair.Key, pair.Value);
+                            else if (agregated[pair.Key].Count() < pair.Value.Count())
+                                agregated[pair.Key] = pair.Value;
+
+                        if (ProgressCallback != null) lock (progress) ProgressCallback(++current, total);
                     }
 
-                    foreach (var pair in values)
-                        if (!agregated.ContainsKey((pair.Key))) agregated.Add(pair.Key, pair.Value);
-                        else if (agregated[pair.Key].Count() < pair.Value.Count())
-                            agregated[pair.Key] = pair.Value;
-
-                    if (ProgressCallback != null) ProgressCallback(++current, total);
-                    Thread.Yield();
+                    lock (returnFields)
+                        returnFields.Add(id, Transformation.ParseTemplate(result, agregated)
+                            .SelectMany(
+                                s =>
+                                    (from Match match in
+                                        Regex.Matches(s, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
+                                        select match.Value))
+                            .Where(s => !string.IsNullOrEmpty(s))
+                            .Select(
+                                s =>
+                                    new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
+                                        .Replace(s, replacement))
+                            .Where(s => !string.IsNullOrEmpty(s)));
                 }
-
-
-                var regex = new Regex(returnFieldInfo.ReturnFieldRegexPattern.ToString(),
-                    RegexOptions.IgnoreCase | RegexOptions.Singleline);
-                IEnumerable<string> list =
-                    Transformation.ParseTemplate(returnFieldInfo.ReturnFieldResultTemplate.ToString(), agregated)
-                        .SelectMany(
-                            replace =>
-                                (from Match match in
-                                    Regex.Matches(replace,
-                                        returnFieldInfo.ReturnFieldRegexPattern.ToString())
-                                    select match.Value.Trim()))
-                        .Select(
-                            input => regex.Replace(input, returnFieldInfo.ReturnFieldRegexReplacement.ToString()).Trim())
-                        .Where(replace => !string.IsNullOrWhiteSpace(replace));
-                returnFields.Add(returnFieldInfo.ReturnFieldId.ToString(), list);
-                if (ProgressCallback != null) ProgressCallback(++current, total);
-            }
+            });
 
             if (CompliteCallback != null) CompliteCallback();
             Thread.Yield();

@@ -12,6 +12,15 @@ namespace MyParser
     [Serializable]
     public class ReturnFieldInfos : Dictionary<string, IEnumerable<ReturnFieldInfo>>, IValueable
     {
+        public ReturnFieldInfos(IEnumerable<ReturnFieldInfo> list)
+        {
+            Add(list);
+        }
+
+        public ReturnFieldInfos()
+        {
+        }
+
         [Value]
         public IEnumerable<ReturnFieldInfo> Url
         {
@@ -203,20 +212,13 @@ namespace MyParser
         {
             string key = returnFieldInfo.ReturnFieldId.ToString();
             if (!ContainsKey(key)) Add(key, new StackListQueue<ReturnFieldInfo> {returnFieldInfo});
-            else
-            {
-                List<ReturnFieldInfo> list = this[key].ToList();
-                list.Add(returnFieldInfo);
-                this[key] = list;
-            }
+            else this[key] = new StackListQueue<ReturnFieldInfo>(this[key]) {returnFieldInfo};
         }
 
         public void Add(IEnumerable<ReturnFieldInfo> returnFieldInfos)
         {
             foreach (ReturnFieldInfo returnFieldInfo in returnFieldInfos)
-            {
                 Add(returnFieldInfo);
-            }
         }
     }
 }
