@@ -155,6 +155,7 @@
     <Compile Include="ItemView\WebSessionView.cs" />
     <Compile Include="ItemView\WebTaskView.cs" />
     <Compile Include="IValueable.cs" />
+    <Compile Include="KeyValuePairStringStringComparer.cs" />
     <Compile Include="Link.cs" />
     <Compile Include="LinkComparer.cs" />
     <Compile Include="Managers\ComparerManager.cs" />
@@ -170,6 +171,8 @@
     <Compile Include="ResourceComparer.cs" />
     <Compile Include="SessionManager.cs" />
     <Compile Include="SiteProperties.cs" />
+    <Compile Include="TableBuilderInfo.cs" />
+    <Compile Include="TableBuilderInfos.cs" />
     <Compile Include="TaskManager.cs" />
     <Compile Include="Values.cs" />
     <Compile Include="Defaults.cs" />

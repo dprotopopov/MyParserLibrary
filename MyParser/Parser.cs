@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MyLibrary;
+using MyLibrary.Collections;
 using MyLibrary.LastError;
 using MyLibrary.Trace;
+using Regex = MyLibrary.Types.Regex;
 
 namespace MyParser
 {
@@ -34,78 +36,103 @@ namespace MyParser
         /// <summary>
         ///     Поиск и формирование значений возвращаемых полей загруженного с сайта объявления
         /// </summary>
-        public ReturnFields BuildReturnFields(IEnumerable<HtmlDocument> parentDocuments, Values parentValues,
-            ReturnFieldInfos returnFieldInfos)
+        public ReturnFields BuildReturnFields(IEnumerable<MemoryStream> streams, Values parents,
+            IEnumerable<ReturnFieldInfo> returnFieldInfos)
         {
             var progress = new object();
             var returnFields = new ReturnFields();
             long current = 0;
-            long total = returnFieldInfos.ToList().Count*parentDocuments.Count()*parentValues.MaxCount;
-            Parallel.ForEach(returnFieldInfos.ToList(), returnFieldInfo =>
+            long total = returnFieldInfos.Count()*streams.Count()*parents.MaxCount;
+            var sources = new StackListQueue<string>();
+            var documents = new StackListQueue<HtmlDocument>();
+            foreach (MemoryStream stream in streams)
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                var edition = new HtmlDocument();
+                edition.Load(stream, Encoding.Default);
+                documents.Add(edition);
+            }
+            foreach (MemoryStream stream in streams)
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                // stream: Считываемый поток.
+                // encoding: Кодировка символов, которую нужно использовать.
+                // detectEncodingFromByteOrderMarks: Значение true для поиска меток порядка следования байтов в начале файла; в противном случае — значение false.
+                // bufferSize: Минимальный размер буфера.
+                // leaveOpen: Значение true, чтобы оставить поток открытым после удаления объекта System.IO.StreamReader; в противном случае — значение false.
+                using (var sr = new StreamReader(stream, Encoding.Default, true, 1 << 10, true))
+                    sources.Add(sr.ReadToEnd());
+            }
+
+            Parallel.ForEach(returnFieldInfos, returnFieldInfo =>
             {
                 IEnumerable<string> ids =
                     Transformation.ParseTemplate(returnFieldInfo.ReturnFieldId.ToString(),
-                        parentValues, false);
+                        parents, false);
                 IEnumerable<string> xpaths =
                     Transformation.ParseTemplate(returnFieldInfo.ReturnFieldXpathTemplate.ToString(),
-                        parentValues, false);
+                        parents, false);
                 IEnumerable<string> results =
                     Transformation.ParseTemplate(returnFieldInfo.ReturnFieldResultTemplate.ToString(),
-                        parentValues, true);
+                        parents, true);
                 IEnumerable<string> patterns =
                     Transformation.ParseTemplate(returnFieldInfo.ReturnFieldRegexPattern.ToString(),
-                        parentValues, true);
+                        parents, true);
                 IEnumerable<string> replacements =
                     Transformation.ParseTemplate(returnFieldInfo.ReturnFieldRegexReplacement.ToString(),
-                        parentValues, true);
-                for (int i = 0; i < parentValues.MaxCount; i++)
+                        parents, true);
+                for (int i = 0; i < parents.MaxCount; i++)
                 {
                     string id = ids.ElementAt(i);
                     string xpath = xpaths.ElementAt(i);
                     string result = results.ElementAt(i);
                     string pattern = patterns.ElementAt(i);
                     string replacement = replacements.ElementAt(i);
-                    var agregated = new Values();
-                    foreach (HtmlDocument document in parentDocuments)
+                    IEnumerable<string> list;
+                    if (!string.IsNullOrEmpty(xpath))
                     {
-                        var values = new Values(parentValues);
-
-                        try
+                        var agregated = new Values();
+                        foreach (HtmlDocument document in documents)
                         {
-                            foreach (HtmlNode htmlNode in document.DocumentNode.SelectNodes(xpath))
-                                values.Add(BuildValues(result, htmlNode));
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.WriteLine(exception);
-                            LastError = exception;
-                        }
-                        foreach (var pair in values)
-                            if (!agregated.ContainsKey((pair.Key))) agregated.Add(pair.Key, pair.Value);
-                            else if (agregated[pair.Key].Count() < pair.Value.Count())
-                                agregated[pair.Key] = pair.Value;
+                            var values = new Values(parents);
 
-                        if (ProgressCallback != null) lock (progress) ProgressCallback(++current, total);
+                            try
+                            {
+                                foreach (HtmlNode htmlNode in document.DocumentNode.SelectNodes(xpath))
+                                    values.Add(BuildValues(result, htmlNode));
+                            }
+                            catch (Exception exception)
+                            {
+                                Debug.WriteLine(exception);
+                                LastError = exception;
+                            }
+                            foreach (var pair in values)
+                                if (!agregated.ContainsKey((pair.Key))) agregated.Add(pair.Key, pair.Value);
+                                else if (agregated[pair.Key].Count() < pair.Value.Count())
+                                    agregated[pair.Key] = pair.Value;
+
+                            if (ProgressCallback != null) lock (progress) ProgressCallback(++current, total);
+                        }
+                        list = new StackListQueue<string>(Transformation.ParseTemplate(result, agregated)
+                            .SelectMany(s => Regex.MatchReplace(s, pattern, replacement)));
                     }
-
-                    lock (returnFields)
-                        returnFields.Add(id, Transformation.ParseTemplate(result, agregated)
-                            .SelectMany(
-                                s =>
-                                    (from Match match in
-                                        Regex.Matches(s, pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
-                                        select match.Value))
-                            .Where(s => !string.IsNullOrEmpty(s))
-                            .Select(
-                                s =>
-                                    new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline)
-                                        .Replace(s, replacement))
-                            .Where(s => !string.IsNullOrEmpty(s)));
+                    else
+                    {
+                        if (ProgressCallback != null)
+                            lock (progress) ProgressCallback(current += streams.Count(), total);
+                        list =
+                            new StackListQueue<string>(Regex.MatchReplace(sources.Last(), pattern, replacement));
+                    }
+                    if (string.IsNullOrEmpty(returnFieldInfo.JoinSeparator.ToString()))
+                        lock (returnFields)
+                            returnFields.Add(id, list);
+                    else
+                        lock (returnFields)
+                            returnFields.Add(id, string.Join(returnFieldInfo.JoinSeparator.ToString(), list));
                 }
             });
 
             if (CompliteCallback != null) CompliteCallback();
-            Thread.Yield();
             return returnFields;
         }
 
@@ -118,7 +145,8 @@ namespace MyParser
         /// <returns></returns>
         public Values BuildValues(string template, HtmlNode node)
         {
-            IEnumerable<string> names = from Match match in Regex.Matches(template, Transformation.FieldPattern)
+            IEnumerable<string> names =
+                from Match match in System.Text.RegularExpressions.Regex.Matches(template, Transformation.FieldPattern)
                 select match.Groups[MyLibrary.Transformation.NameGroup].Value;
             IEnumerable<MethodInfo> methods = GetType()
                 .GetMethods(BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Static)
@@ -136,7 +164,6 @@ namespace MyParser
                 });
 
             if (CompliteCallback != null) CompliteCallback();
-            Thread.Yield();
             return values;
         }
 
@@ -183,7 +210,7 @@ namespace MyParser
                 value = propertyInfo != null ? propertyInfo.GetValue(value, null) : null;
                 if (value == null) return null;
             }
-            return WebUtility.HtmlDecode((string) value);
+            return WebUtility.HtmlDecode(value.ToString().Trim());
         }
 
         /// <summary>
@@ -199,15 +226,16 @@ namespace MyParser
             {
                 case "VisibleInnerText":
                     return
-                        new Regex("\\<[^\\>]+\\>", RegexOptions.Singleline).Replace(
+                        new System.Text.RegularExpressions.Regex("\\<[^\\>]+\\>", RegexOptions.Singleline).Replace(
                             CustomNodeProperty(node, "VisibleOuterHtml"),
                             string.Empty);
 
                 case "VisibleInnerHtml":
                     return
-                        new Regex("\\A\\<[^\\>]+\\>(.*)\\<[^\\>]+\\>\\Z", RegexOptions.Singleline).Replace(
-                            CustomNodeProperty(node, "VisibleOuterHtml"),
-                            "$1");
+                        new System.Text.RegularExpressions.Regex("\\A\\<[^\\>]+\\>(.*)\\<[^\\>]+\\>\\Z",
+                            RegexOptions.Singleline).Replace(
+                                CustomNodeProperty(node, "VisibleOuterHtml"),
+                                "$1");
 
                 case "VisibleOuterHtml":
                 {
@@ -222,7 +250,8 @@ namespace MyParser
                             MatchCollection matches in
                                 styles.Select(
                                     styleNode =>
-                                        new Regex("(?<classes>[^\\{]+)\\{(?<style>[^\\}]*)\\}", RegexOptions.Singleline)
+                                        new System.Text.RegularExpressions.Regex(
+                                            "(?<classes>[^\\{]+)\\{(?<style>[^\\}]*)\\}", RegexOptions.Singleline)
                                             .Matches(
                                                 styleNode.InnerText))
                             )
@@ -239,7 +268,7 @@ namespace MyParser
                     if (id1 != null &&
                         ((visible.ContainsKey("#" + id1.Value.Trim())) && !visible["#" + id1.Value.Trim()]))
                         return null;
-                    if (classes1 != null && new Regex(@"\s+").Split(classes1.Value)
+                    if (classes1 != null && new System.Text.RegularExpressions.Regex(@"\s+").Split(classes1.Value)
                         .Any(c => (visible.ContainsKey("." + c)) && !visible["." + c])) return null;
                     string outerHtml = node.OuterHtml;
                     HtmlNodeCollection children = node.SelectNodes(node.XPath + @"/*");
@@ -259,7 +288,8 @@ namespace MyParser
                             ((style != null && !CheckStyleVisibility(style.Value))
                              || (id != null &&
                                  ((visible.ContainsKey("#" + id.Value.Trim())) && !visible["#" + id.Value.Trim()]))
-                             || (classes != null && new Regex(@"\s+").Split(classes.Value)
+                             ||
+                             (classes != null && new System.Text.RegularExpressions.Regex(@"\s+").Split(classes.Value)
                                  .Any(c => (visible.ContainsKey("." + c)) && !visible["." + c])))
                                 ? string.Empty
                                 : (replacement = CustomNodeProperty(child, propertyName)) == null
@@ -268,7 +298,8 @@ namespace MyParser
                     }
                     Debug.WriteLine(outerHtml);
 
-                    return new Regex("\\v", RegexOptions.Singleline).Replace(outerHtml, string.Empty);
+                    return new System.Text.RegularExpressions.Regex("\\v", RegexOptions.Singleline).Replace(outerHtml,
+                        string.Empty);
                 }
 
                 case "HidemyAssOuterHtml":
@@ -319,7 +350,8 @@ namespace MyParser
                                 }
                             }
                         //Debug.WriteLine(outerHtml);
-                        sb.AppendLine(new Regex("(\\s|\\<(\\/)?(div|span|img)[^\\>]*\\>)", RegexOptions.Singleline)
+                        sb.AppendLine(new System.Text.RegularExpressions.Regex(
+                            "(\\s|\\<(\\/)?(div|span|img)[^\\>]*\\>)", RegexOptions.Singleline)
                             .Replace(
                                 node2.OuterHtml, string.Empty));
                     }
@@ -362,7 +394,9 @@ namespace MyParser
 
         public static Dictionary<string, string> ParseHtmlStyleString(string style)
         {
-            style = new Regex("\\s+", RegexOptions.Singleline).Replace(style, string.Empty).ToLowerInvariant();
+            style =
+                new System.Text.RegularExpressions.Regex("\\s+", RegexOptions.Singleline).Replace(style, string.Empty)
+                    .ToLowerInvariant();
             string[] settings = style.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
             return (from s in settings where s.Contains(':') select s.Split(':')).ToDictionary(data => data[0],
                 data => data[1]);

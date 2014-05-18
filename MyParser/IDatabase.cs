@@ -10,6 +10,7 @@ namespace MyParser
         string HierarchicalTable { get; }
         string ReturnFieldTable { get; }
         string BuilderTable { get; }
+        string TableBuilderTable { get; }
         string ProxyTable { get; }
         string ModuleNamespaceColumn { get; }
         string ModuleClassnameColumn { get; }
@@ -70,5 +71,7 @@ namespace MyParser
         ///     Значение в поле columnName
         /// </summary>
         new object GetScalar(params object[] parameters);
+
+        TableBuilderInfos GetTableBuilderInfos(object siteId);
     }
 }

@@ -1,6 +1,6 @@
 using System;
-using HtmlAgilityPack;
-using MyLibrary.Collections;
+using System.Collections.Generic;
+using System.IO;
 using MyParser.WebSessions;
 
 namespace MyParser
@@ -33,6 +33,6 @@ namespace MyParser
         /// <summary>
         ///     Запрос к сайту с использованием RT.Crawler
         /// </summary>
-        StackListQueue<HtmlDocument> WebRequestHtmlDocument(Uri uri, IWebSession webSession);
+        IEnumerable<MemoryStream> WebRequest(Uri uri, IWebSession webSession);
     }
 }

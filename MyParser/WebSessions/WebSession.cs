@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using MyLibrary.Attribute;
@@ -29,15 +27,24 @@ namespace MyParser.WebSessions
             return new Values(this);
         }
 
+        [Value]
         public WebSessionStatus Status { get; set; }
+
         public WebSessionCallback OnStartCallback { get; set; }
         public WebSessionCallback OnCompliteCallback { get; set; }
         public WebSessionCallback OnErrorCallback { get; set; }
+
+        [Value]
         public string Method { get; set; }
+
+        [Value]
         public string Request { get; set; }
+
         public WebRequest WebRequest { get; set; }
         public WebResponse WebResponse { get; set; }
         public IAsyncResult AsyncResult { get; set; }
+
+        [Value]
         public object State { get; set; }
 
         /// <summary>

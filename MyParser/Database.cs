@@ -4,7 +4,6 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyLibrary.LastError;
 using MyLibrary.Lock;
@@ -30,11 +29,13 @@ namespace MyParser
             HierarchicalTable = "Hierarchical";
             ReturnFieldTable = "ReturnField";
             BuilderTable = "Builder";
+            TableBuilderTable = "TableBuilder";
             ProxyTable = "Proxy";
 
             IdColumn = "Id";
             TitleColumn = "Title";
             TableNameColumn = "TableName";
+            FieldNameColumn = "FieldName";
             LevelColumn = "Level";
             ParentIdColumn = "Parent" + IdColumn;
             HasChildColumn = "HasChild";
@@ -645,6 +646,44 @@ namespace MyParser
             throw new NotImplementedException();
         }
 
+        public TableBuilderInfos GetTableBuilderInfos(object siteId)
+        {
+            Debug.Assert(siteId != null && !string.IsNullOrWhiteSpace(siteId.ToString()));
+            var builderInfos = new TableBuilderInfos();
+            try
+            {
+                Connection.Open();
+                using (SQLiteCommand command = Connection.CreateCommand())
+                {
+                    command.CommandText =
+                        string.Format("SELECT * FROM {0}{1}{2} JOIN {2} USING ({4}) WHERE {0}{1}{2}.{0}{3}=@{0}{3}",
+                            SiteTable, TableBuilderTable, MappingTable, IdColumn, TableNameColumn);
+                    command.Parameters.Add(new SQLiteParameter(string.Format("@{0}{1}", SiteTable, IdColumn), siteId));
+                    SQLiteDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var info = new TableBuilderInfo();
+                        long current = 0;
+                        long total = reader.FieldCount;
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string key = reader.GetName(i);
+                            object value = reader[key];
+                            info.Add(key, value);
+                            if (ProgressCallback != null) ProgressCallback(++current, total);
+                        }
+                        builderInfos.Add(info);
+                    }
+                }
+            }
+            finally
+            {
+                Connection.Close();
+            }
+            if (CompliteCallback != null) CompliteCallback();
+            return builderInfos;
+        }
+
         public new Values ToValues()
         {
             return new Values(this);
@@ -657,11 +696,13 @@ namespace MyParser
         public string HierarchicalTable { get; protected set; }
         public string ReturnFieldTable { get; protected set; }
         public string BuilderTable { get; protected set; }
+        public string TableBuilderTable { get; protected set; }
         public string ProxyTable { get; private set; }
 
         public new string IdColumn { get; protected set; }
         public new string TitleColumn { get; protected set; }
         public new string TableNameColumn { get; protected set; }
+        public new string FieldNameColumn { get; protected set; }
         public new string LevelColumn { get; protected set; }
         public new string ParentIdColumn { get; protected set; }
         public new string HasChildColumn { get; protected set; }

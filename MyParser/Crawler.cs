@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using HtmlAgilityPack;
 using MyLibrary.Collections;
 using MyLibrary.Lock;
 using MyLibrary.Trace;
@@ -52,12 +52,11 @@ namespace MyParser
         /// <summary>
         ///     Запрос к сайту с использованием RT.Crawler
         /// </summary>
-        public StackListQueue<HtmlDocument> WebRequestHtmlDocument(Uri uri, IWebSession webSession)
+        public IEnumerable<MemoryStream> WebRequest(Uri uri, IWebSession webSession)
         {
             Debug.WriteLine("uri: {0}", uri);
             long current = 0;
             long total = 1;
-            var collection = new StackListQueue<HtmlDocument>();
             ICompression compression = CompressionManager.CreateCompression(Compression);
             Encoding encoder = System.Text.Encoding.GetEncoding(Encoding);
             var memoryStreams = new StackListQueue<MemoryStream>();
@@ -66,7 +65,7 @@ namespace MyParser
             for (int i = 0; i < NumberOfTriesBeforeError && !memoryStreams.Any(); i++)
                 try
                 {
-                    var httpWebRequest = (HttpWebRequest) WebRequest.Create(uri);
+                    var httpWebRequest = (HttpWebRequest) System.Net.WebRequest.Create(uri);
                     httpWebRequest.CookieContainer = new CookieContainer();
                     httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
                     httpWebRequest.ContentType = string.Format(@"text/html; charset={0}", Encoding);
@@ -174,17 +173,8 @@ namespace MyParser
             if ((Edition & (int) DocumentEdition.Original) == 0)
                 memoryStreams.Dequeue();
 
-            foreach (MemoryStream stream in memoryStreams)
-            {
-                stream.Seek(0, SeekOrigin.Begin);
-                var edition = new HtmlDocument();
-                edition.Load(stream, System.Text.Encoding.Default);
-                collection.Add(edition);
-            }
-            if (ProgressCallback != null) ProgressCallback(++current, total);
-
             if (CompliteCallback != null) CompliteCallback();
-            return collection;
+            return memoryStreams;
         }
 
         public bool Wait(bool semaphore)

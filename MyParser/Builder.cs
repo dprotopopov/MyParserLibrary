@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 using MyLibrary;
 using MyLibrary.Collections;
 using MyLibrary.Comparer;
@@ -64,12 +64,14 @@ namespace MyParser
             Parser = new Parser {Transformation = Transformation};
             Crawler = new Crawler {CompressionManager = CompressionManager};
             ObjectComparer = new ObjectComparer();
+            KeyValuePairStringStringComparer = new KeyValuePairStringStringComparer();
         }
 
         public string ModuleClassname { get; set; }
 
         public string CommandText { get; set; }
         public object TableName { get; set; }
+        public object FieldName { get; set; }
 
         public object SiteId
         {
@@ -78,6 +80,7 @@ namespace MyParser
 
         public KeyValuePair<object, object> Site { get; set; }
         public MethodInfo MethodInfo { get; set; }
+        public KeyValuePairStringStringComparer KeyValuePairStringStringComparer { get; set; }
         public long MinLevel { get; set; }
         public long MaxLevel { get; set; }
         public long SiteMinLevel { get; set; }
@@ -111,7 +114,7 @@ namespace MyParser
         public void BuildGridItems()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -152,7 +155,7 @@ namespace MyParser
         public void RefreshGridItems()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -214,7 +217,7 @@ namespace MyParser
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
             Debug.WriteLine("items.Length={0}", items.Count);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -295,7 +298,7 @@ namespace MyParser
         public void BuildMappingData()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -400,7 +403,7 @@ namespace MyParser
         public void BuildMapping()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -598,7 +601,7 @@ namespace MyParser
         public void ExecuteNonQuery()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -625,10 +628,140 @@ namespace MyParser
             Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
         }
 
+        public void DownloadTableField()
+        {
+            Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+            var stack = new StackListQueue<object>();
+            stack.Push(CompliteCallback);
+            CompliteCallback = null;
+            SiteProperties siteProperties = Database.GetSiteProperties(SiteId);
+            TableBuilderInfos builderInfos = Database.GetTableBuilderInfos(SiteId);
+            TableBuilderInfo builderInfo = builderInfos[TableName.ToString()][FieldName.ToString()];
+            ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
+            Crawler.Method = builderInfo.Method.ToString();
+            Crawler.Encoding = builderInfo.Encoding.ToString();
+            Crawler.Compression = builderInfo.Compression.ToString();
+            Crawler.Edition = (int) MyDatabase.Database.ConvertTo<long>(builderInfo.Edition);
+            var returnFieldInfos = new ReturnFieldInfos
+            {
+                new ReturnFieldInfo
+                {
+                    ReturnFieldId = FieldName,
+                    ReturnFieldXpathTemplate = builderInfo.XpathTemplate,
+                    ReturnFieldResultTemplate = builderInfo.ResultTemplate,
+                    ReturnFieldRegexPattern = builderInfo.RegexPattern,
+                    ReturnFieldRegexReplacement = builderInfo.RegexReplacement,
+                    JoinSeparator = builderInfo.JoinSeparator
+                }
+            };
+            string updateString =
+                string.Format(
+                    "UPDATE {0}{1} SET {1}{3}='{{{{{1}{3}}}}}' WHERE {0}{2}={{{{{0}{2}}}}} AND {0}{1}{2}='{{{{{0}{1}{2}}}}}';",
+                    Database.SiteTable, TableName, Database.IdColumn, FieldName);
+            var values =
+                new Values(Database.GetMapping(TableName.ToString(), SiteMinLevel, SiteMaxLevel, SiteId).ToValues());
+
+            Debug.WriteLine("values {0}", values);
+
+            var baseBuilder = new UriBuilder(siteProperties.Url.ToString())
+            {
+                UserName = siteProperties.UserName.ToString(),
+                Password = siteProperties.Password.ToString(),
+            };
+            Debug.WriteLine("baseBuilder {0}", baseBuilder);
+
+            for (int index = 0; index < values.MaxCount; index++)
+                try
+                {
+                    object level = Database.GetScalar(values.Key.ElementAt(index), Database.LevelColumn,
+                        TableName.ToString(), SiteId);
+                    values.Add("Level", level.ToString());
+                    string[] list = values.Key.ElementAt(index).Split(Parser.SplitChar);
+                    for (int i = 0; i < list.Length; i++)
+                        values.Add(string.Format("Key[{0}]", i), list[i]);
+                    values.Add("Option", list[Math.Min(MyDatabase.Database.ConvertTo<long>(level), list.Length - 1)]);
+                }
+                catch (Exception)
+                {
+                }
+            values.Add("Table", Enumerable.Repeat(TableName.ToString(), values.MaxCount));
+            values.Add("Field", Enumerable.Repeat(FieldName.ToString(), values.MaxCount));
+            values.Add("SiteId", Enumerable.Repeat(SiteId.ToString(), values.MaxCount));
+            values.Add("Url", Transformation.ParseTemplate(builderInfo.UrlTemplate.ToString(), values));
+            values.Add("Request", Transformation.ParseTemplate(builderInfo.RequestTemplate.ToString(), values));
+            var uris = new StackListQueue<Uri>();
+            for (int index = 0; index < values.MaxCount; index++)
+                try
+                {
+                    Values slice = values.Slice(index);
+                    uris.Add(MyLibrary.Types.Uri.Combine(baseBuilder.Uri.ToString(), slice.Url.First()));
+                }
+                catch (Exception)
+                {
+                }
+            values["Url"] = uris.Select(u => u.ToString());
+
+            Debug.WriteLine("values {0}", values);
+
+            var dictionary = new Dictionary<KeyValuePair<string, string>, Values>(KeyValuePairStringStringComparer);
+            for (int index = 0; index < values.MaxCount; index++)
+            {
+                Values slice = values.Slice(index);
+                var key = new KeyValuePair<string, string>(slice.Url.First(), slice["Request"].First());
+                if (dictionary.ContainsKey(key))
+                    dictionary[key].Add(slice);
+                else dictionary.Add(key, slice);
+            }
+
+            AppendLineCallback("BEGIN;");
+            foreach (var pair in dictionary)
+            {
+                var uri = new Uri(pair.Key.Key);
+                Crawler.Request = pair.Key.Value;
+
+                IEnumerable<MemoryStream> streams = Crawler.WebRequest(uri, new WebSession());
+
+                for (int i = 0; i < pair.Value.MaxCount; i++)
+                {
+                    Values slice = pair.Value.Slice(i);
+
+                    ReturnFields returnFields = Parser.BuildReturnFields(streams,
+                        slice,
+                        returnFieldInfos.ToList());
+
+                    int count = returnFields[FieldName.ToString()].Count();
+                    var items = new Values
+                    {
+                        {string.Format("{0}{1}", TableName, FieldName), returnFields[FieldName.ToString()]},
+                        {
+                            string.Format("{0}{1}{2}", Database.SiteTable, TableName, Database.IdColumn),
+                            Enumerable.Repeat(slice["Key"].First(), count)
+                        },
+                        {"Field", Enumerable.Repeat(slice["Field"].First(), count)},
+                        {"Table", Enumerable.Repeat(slice["Table"].First(), count)},
+                        {"SiteId", Enumerable.Repeat(slice["SiteId"].First(), count)},
+                    };
+                    IEnumerable<string> commandTexts = Transformation.ParseTemplate(updateString,
+                        items.SqlEscape());
+
+                    Total += commandTexts.Count();
+                    foreach (string commandText in commandTexts)
+                    {
+                        AppendLineCallback(commandText);
+                        if (ProgressCallback != null) ProgressCallback(++Current, Total);
+                    }
+                }
+            }
+            AppendLineCallback("COMMIT;");
+            CompliteCallback = (CompliteCallback) stack.Pop();
+            if (CompliteCallback != null) CompliteCallback();
+            Debug.WriteLine("End {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
+        }
+
         public void DownloadTable()
         {
             Debug.WriteLine("Begin {0}::{1}", GetType().Name, MethodBase.GetCurrentMethod().Name);
-            var stack = new Stack<object>();
+            var stack = new StackListQueue<object>();
             stack.Push(CompliteCallback);
             CompliteCallback = null;
 
@@ -664,15 +797,17 @@ namespace MyParser
             SiteProperties siteProperties = Database.GetSiteProperties(SiteId);
             BuilderInfos builderInfos = Database.GetBuilderInfos(SiteId);
             BuilderInfo builderInfo = builderInfos[TableName.ToString()];
+            ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
             Crawler.Method = builderInfo.Method.ToString();
             Crawler.Encoding = builderInfo.Encoding.ToString();
             Crawler.Compression = builderInfo.Compression.ToString();
-            ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
+            Crawler.Edition = (int) MyDatabase.Database.ConvertTo<long>(builderInfo.Edition);
 
             var baseValues = new Values
             {
                 {"Table", new StackListQueue<string>(TableName.ToString())},
                 {"Value", new StackListQueue<string>(string.Empty)},
+                {"Value||1", new StackListQueue<string>("1")},
                 {"Value[0]", new StackListQueue<string>(string.Empty)},
                 {"Option[0]", new StackListQueue<string>(string.Empty)}
             };
@@ -706,6 +841,8 @@ namespace MyParser
                 int parentCount = parentValues.MaxCount;
 
                 parentValues.Option = new StackListQueue<string>(Enumerable.Repeat(optionName, parentCount));
+                parentValues["Value||1"] =
+                    new StackListQueue<string>(parentValues.Value.Select(s => string.IsNullOrEmpty(s) ? "1" : s));
                 foreach (string s in new[] {"Option", "Value"})
                 {
                     parentValues.Add(string.Format("{1}[{0}]", -currentLevel, s),
@@ -779,6 +916,7 @@ namespace MyParser
                             ReturnFieldResultTemplate = pair.Value[1],
                             ReturnFieldRegexPattern = pair.Value[2],
                             ReturnFieldRegexReplacement = pair.Value[3],
+                            JoinSeparator = string.Empty
                         });
 
                 Debug.WriteLine("returnFieldInfosTemplate {0}:{1}", currentLevel, returnFieldInfos);
@@ -801,12 +939,11 @@ namespace MyParser
                     string requestTemplate = requestTemplates[Math.Min(currentLevel, requestTemplates.Length - 1)];
                     Crawler.Request = String.Parse(Transformation.ParseTemplate(requestTemplate, slice));
 
-                    IEnumerable<HtmlDocument> documents =
-                        Crawler.WebRequestHtmlDocument(uri, new WebSession());
+                    IEnumerable<MemoryStream> streams = Crawler.WebRequest(uri, new WebSession());
 
-                    ReturnFields returnFields = Parser.BuildReturnFields(documents,
+                    ReturnFields returnFields = Parser.BuildReturnFields(streams,
                         slice,
-                        returnFieldInfos);
+                        returnFieldInfos.ToList());
 
                     returnFields.Option = new StackListQueue<string>(
                         returnFields.Option.Select(

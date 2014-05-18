@@ -2,8 +2,6 @@ D:\Projects\MyParserLibrary\MyParser\obj\x86\Release\MyParser.csprojResolveAssem
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Release\MyParser.Properties.Resources.resources
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Release\MyParser.csproj.GenerateResource.Cache
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\libtidy.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\x64\SQLite.Interop.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\x86\SQLite.Interop.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\MyParser.dll.config
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\MyParser.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\MyParser.pdb
@@ -13,11 +11,6 @@ D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\HtmlAgilityPack.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ICSharpCode.SharpZipLib.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\MyDatabase.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\MyLibrary.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Common.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Interfaces.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.OrmLite.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.OrmLite.SqliteNET.dll
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Text.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\System.Data.SQLite.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\System.Data.SQLite.EF6.dll
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\System.Data.SQLite.Linq.dll
@@ -29,11 +22,6 @@ D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\EntityFramework.xml
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\EntityFramework.SqlServer.xml
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\HtmlAgilityPack.pdb
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\HtmlAgilityPack.xml
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Common.pdb
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Common.xml
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Interfaces.pdb
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Interfaces.xml
-D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\ServiceStack.Text.xml
 D:\Projects\MyParserLibrary\MyParser\bin\x86\Release\System.Data.SQLite.xml
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Release\MyParser.dll
 D:\Projects\MyParserLibrary\MyParser\obj\x86\Release\MyParser.pdb

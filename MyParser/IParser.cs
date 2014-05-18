@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using HtmlAgilityPack;
 
 namespace MyParser
@@ -8,8 +9,8 @@ namespace MyParser
         /// <summary>
         ///     Поиск и формирование значений возвращаемых полей загруженного с сайта объявления
         /// </summary>
-        ReturnFields BuildReturnFields(IEnumerable<HtmlDocument> parentDocuments, Values parentValues,
-            ReturnFieldInfos returnFieldInfos);
+        ReturnFields BuildReturnFields(IEnumerable<MemoryStream> streams, Values parents,
+            IEnumerable<ReturnFieldInfo> returnFieldInfos);
 
         /// <summary>
         ///     Формирование пар идентификатор параметра - значение параметра

@@ -12,6 +12,15 @@ namespace MyParser
     /// </summary>
     public class ReturnFields : MyLibrary.ReturnFields, IValueable
     {
+        public ReturnFields(ReturnFields returnFields)
+            : base(returnFields)
+        {
+        }
+
+        public ReturnFields()
+        {
+        }
+
         /// <summary>
         ///     Предопределённое имя возвращаемых полей
         /// </summary>

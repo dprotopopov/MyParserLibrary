@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,7 +10,6 @@ using MyLibrary.Attribute;
 using MyLibrary.Collections;
 using MyParser.ItemView;
 using MyParser.WebSessions;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace MyParser.WebTasks
 {
@@ -73,9 +73,9 @@ namespace MyParser.WebTasks
                 {
                     Url = new StackListQueue<string> {builder.ToString()}
                 };
-                IEnumerable<HtmlDocument> docs = This.Crawler.WebRequestHtmlDocument(builder.Uri, This.WebSession);
+                IEnumerable<MemoryStream> docs = This.Crawler.WebRequest(builder.Uri, This.WebSession);
                 This.ReturnFields = This.Parser.BuildReturnFields(docs, values,
-                    This.ReturnFieldInfos);
+                    This.ReturnFieldInfos.ToList());
                 This.Status = WebTaskStatus.Finished;
                 This.Thread = null;
                 if (This.OnCompliteCallback != null) This.OnCompliteCallback(This);
