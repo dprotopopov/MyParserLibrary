@@ -27,6 +27,11 @@ namespace MyParser
         {
         }
 
+        public Values(IEnumerable<KeyValuePair<string, IEnumerable<string>>> slice, int count)
+            : base(slice, count)
+        {
+        }
+
         [Value]
         public new IEnumerable<string> Url
         {

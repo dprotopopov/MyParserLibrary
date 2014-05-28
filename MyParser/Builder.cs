@@ -432,7 +432,7 @@ namespace MyParser
 
             if (MinLevel > 0 && SiteMinLevel > 0)
             {
-                Mapping mapping = Database.GetMapping(TableName.ToString(), MinLevel - 1, MinLevel - 1, SiteMinLevel - 1,
+                Mapping mapping = Database.GetMapping(TableName.ToString(), (long) 0, MinLevel - 1, (long) 0,
                     SiteMinLevel - 1,
                     SiteId);
 
@@ -465,20 +465,24 @@ namespace MyParser
                     objects.Select(obj => (Mapping) _getMappingMethodInfo.Invoke(Database, new object[] {obj}))
                         .ToArray();
 
+                StackListQueue<object>[] parents = parentMappings.Select(
+                    parentMapping =>
+                        new StackListQueue<object>(parentMapping.Values.Distinct())).ToArray();
+
                 lock (progress) Total += parentMappings[0].Count + parentMappings[1].Count;
                 lock (progress) if (ProgressCallback != null) ProgressCallback(Current, Total);
 
                 Dictionary<object, StackListQueue<object>>[] children =
-                    parentMappings.Select(
-                        parentMapping =>
-                            parentMapping.Values.Distinct()
-                                .ToDictionary(item => item,
-                                    item =>
-                                        new StackListQueue<object>
-                                        {
-                                            parentMapping.Where(pair => ObjectComparer.Equals(pair.Value, item))
-                                                .Select(pair => pair.Key)
-                                        }, ObjectComparer)).ToArray();
+                    parents.Select(
+                        (parent, index) =>
+                            parent.ToDictionary(item => item,
+                                item =>
+                                    new StackListQueue<object>
+                                    {
+                                        parentMappings[index].Where(pair => ObjectComparer.Equals(pair.Value, item))
+                                            .Select(pair => pair.Key)
+                                    }, ObjectComparer)).ToArray();
+
                 var childrenPair =
                     new KeyValuePair
                         <Dictionary<object, StackListQueue<object>>, Dictionary<object, StackListQueue<object>>>(
@@ -808,8 +812,6 @@ namespace MyParser
                 {"Table", new StackListQueue<string>(TableName.ToString())},
                 {"Value", new StackListQueue<string>(string.Empty)},
                 {"Value||1", new StackListQueue<string>("1")},
-                {"Value[0]", new StackListQueue<string>(string.Empty)},
-                {"Option[0]", new StackListQueue<string>(string.Empty)}
             };
 
             Debug.WriteLine("baseValues {0}", baseValues);
@@ -841,17 +843,11 @@ namespace MyParser
                 int parentCount = parentValues.MaxCount;
 
                 parentValues.Option = new StackListQueue<string>(Enumerable.Repeat(optionName, parentCount));
+                parentValues["Option[0]"] = new StackListQueue<string>(Enumerable.Repeat(optionName, parentCount));
+                parentValues["Value[0]"] = new StackListQueue<string>(Enumerable.Repeat(string.Empty, parentCount));
                 parentValues["Value||1"] =
                     new StackListQueue<string>(parentValues.Value.Select(s => string.IsNullOrEmpty(s) ? "1" : s));
-                foreach (string s in new[] {"Option", "Value"})
-                {
-                    parentValues.Add(string.Format("{1}[{0}]", -currentLevel, s),
-                        parentValues[string.Format("{1}[{0}]", 1 - currentLevel, s)]);
-                    for (int i = currentLevel - 1; i >= 1; i--)
-                        parentValues[string.Format("{1}[{0}]", -i, s)] =
-                            parentValues[string.Format("{1}[{0}]", 1 - i, s)];
-                    parentValues[string.Format("{0}[0]", s)] = parentValues[s];
-                }
+                parentValues[optionName] = new StackListQueue<string>(Enumerable.Repeat(string.Empty, parentCount));
                 Debug.WriteLine("parentValues {0}:{1}", currentLevel, parentValues);
 
                 if (!parentValues.Url.Any())
@@ -928,7 +924,10 @@ namespace MyParser
                     })
                         .Select(s => s.ToLower()));
 
-                for (int i = 0; i < parentCount; i++)
+                var progress = new object();
+                var append = new object();
+
+                Parallel.ForEach(Enumerable.Range(0, parentCount), i =>
                 {
                     Values slice = parentValues.Slice(i);
                     Debug.WriteLine("slice {0}:{1}:{2}", currentLevel, i, slice);
@@ -969,13 +968,11 @@ namespace MyParser
                     {
                         List<string> currentOptions = options.GetRange(0, keyCount);
                         List<string> currentTitles = titles.GetRange(0, keyCount);
-                        var currentValues = new Values();
+                        var currentValues = new Values(slice, keyCount);
                         if (string.CompareOrdinal(flags[currentLevel], @"?") == 0)
                         {
                             currentOptions.Add(slice.Value.First());
-                            foreach (var pair in slice.Where(pair => pair.Value.Any()))
-                                currentValues.Add(pair.Key,
-                                    new StackListQueue<string>(Enumerable.Repeat(pair.Value.First(), keyCount + 1)));
+                            currentValues.Add(slice);
                             foreach (string s in new[] {"Option", "Value"})
                                 currentValues[string.Format("{0}[0]", s)] =
                                     new StackListQueue<string>(
@@ -985,19 +982,13 @@ namespace MyParser
                                         currentValues[string.Format("{0}[-1]", s)].ElementAt(keyCount)
                                     };
                         }
-                        else
-                        {
-                            foreach (var pair in slice.Where(pair => pair.Value.Any()))
-                                currentValues.Add(pair.Key,
-                                    new StackListQueue<string>(Enumerable.Repeat(pair.Value.First(), keyCount)));
-                        }
 
-                        currentValues.Add(optionName, new StackListQueue<string>(currentOptions).GetRange(
-                            0, keyCount));
+                        currentValues[optionName] = new StackListQueue<string>(currentOptions).GetRange(0, keyCount);
 
                         var ids =
                             new StackListQueue<string>(Transformation.ParseTemplate(builderInfo.IdTemplate.ToString(),
                                 currentValues).Select(s => s.ToLower()));
+
                         var items = new Values
                         {
                             {
@@ -1021,8 +1012,8 @@ namespace MyParser
                         Total += commandTexts.Count();
                         foreach (string commandText in commandTexts)
                         {
-                            AppendLineCallback(commandText);
-                            if (ProgressCallback != null) ProgressCallback(++Current, Total);
+                            lock (append) AppendLineCallback(commandText);
+                            if (ProgressCallback != null) lock (progress) ProgressCallback(++Current, Total);
                         }
 
                         currentValues.Remove(string.Format("{0}", ReturnTitle));
@@ -1031,36 +1022,32 @@ namespace MyParser
                             currentValues.Value = currentOptions;
                             currentValues.Title = new StackListQueue<string>();
                             currentValues.Remove("Url");
-                            stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel + 1, currentValues));
-                            Total += currentValues.MaxCount;
+                            foreach (string s in new[] {"Option", "Value"})
+                            {
+                                currentValues.Add(string.Format("{1}[{0}]", -currentLevel, s),
+                                    currentValues[string.Format("{1}[{0}]", 1 - currentLevel, s)]);
+                                for (int j = currentLevel - 1; j >= 1; j--)
+                                    currentValues[string.Format("{1}[{0}]", -j, s)] =
+                                        currentValues[string.Format("{1}[{0}]", 1 - j, s)];
+                                currentValues[string.Format("{0}[0]", s)] = currentValues[s];
+                            }
+                            lock (stackListQueue)
+                                stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel + 1, currentValues));
+                            lock (progress) Total += currentValues.MaxCount;
                         }
                     }
                     foreach (var redirect in new[] {optionRedirect, valueRedirect})
                     {
                         int countRedirect = redirect.Count;
                         if (countRedirect == 0) continue;
-                        int optionCount = Math.Min(options.Count() - keyCount, countRedirect);
-                        int titleCount = Math.Min(titles.Count() - keyCount, countRedirect);
-                        List<string> redirectOptions = (optionCount > 0)
-                            ? options.GetRange(keyCount, optionCount)
-                            : new StackListQueue<string>();
-                        List<string> redirectTitles = (titleCount > 0)
-                            ? titles.GetRange(keyCount, titleCount)
-                            : new StackListQueue<string>();
-                        var redirectValues = new Values();
-                        foreach (var pair in slice.Where(pair => pair.Value.Any()))
-                            redirectValues.Add(pair.Key,
-                                Enumerable.Repeat(pair.Value.First(), countRedirect).ToList());
-                        if (redirectValues.ContainsKey(optionName)) redirectValues[optionName] = redirectOptions;
-                        else redirectValues.Add(optionName, redirectOptions);
-                        redirectValues.Url = optionRedirect;
-                        redirectValues.Value = redirectOptions;
-                        redirectValues.Title = redirectTitles;
-                        stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel, redirectValues));
-                        Total += countRedirect;
+                        var redirectValues = new Values(slice, countRedirect);
+                        redirectValues.Url = redirect;
+                        lock (stackListQueue)
+                            stackListQueue.Enqueue(new KeyValuePair<int, Values>(currentLevel, redirectValues));
+                        lock (progress) Total += countRedirect;
                     }
-                    if (ProgressCallback != null) ProgressCallback(++Current, Total);
-                }
+                    if (ProgressCallback != null) lock (progress) ProgressCallback(++Current, Total);
+                });
             }
 
             AppendLineCallback("COMMIT;");
