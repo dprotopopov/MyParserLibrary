@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Reflection;
 using MyLibrary;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using MyLibrary.Types;
 
 namespace MyParser

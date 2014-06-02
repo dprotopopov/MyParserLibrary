@@ -1,5 +1,5 @@
 using System.Reflection;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 
 namespace MyParser
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Forms;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 
 namespace MyParser
 {

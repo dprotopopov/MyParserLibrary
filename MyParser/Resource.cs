@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using MyLibrary;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using String = MyLibrary.Types.String;
 
 namespace MyParser

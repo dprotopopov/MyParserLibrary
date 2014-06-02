@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using MyLibrary;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using MyLibrary.Collections;
 using MyParser.ItemView;
 using MyParser.WebSessions;

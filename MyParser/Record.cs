@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
-using MyLibrary.Attribute;
-
-namespace MyParser
+﻿namespace MyParser
 {
     public class Record : MyDatabase.Record, IValueable
     {

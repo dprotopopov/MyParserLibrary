@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using MyLibrary.Collections;
 
 namespace MyParser

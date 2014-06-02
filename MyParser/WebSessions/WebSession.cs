@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using MyLibrary.LastError;
 using MyParser.ItemView;
 

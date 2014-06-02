@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using MyLibrary;
-using MyLibrary.Attribute;
+using MyLibrary.Attributes;
 using MyLibrary.Collections;
 using String = MyLibrary.Types.String;
 
