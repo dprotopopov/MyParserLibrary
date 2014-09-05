@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Forms;
 using MyLibrary.Attributes;
@@ -9,12 +10,14 @@ namespace MyParser
     ///     Параметры для процедуры возвращающей вычисленные поля при разборе страницы
     /// </summary>
     [Serializable]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class ReturnFieldInfo : MyLibrary.Collections.Properties, IValueable
     {
         /// <summary>
         ///     Идентификатор сайта
         /// </summary>
         [Value]
+        [Description("Идентификатор сайта в базе данных")]
         public object SiteId
         {
             get
@@ -37,6 +40,7 @@ namespace MyParser
         ///     Идентификатор возвращаемого поля
         /// </summary>
         [Value]
+        [Description("Идентификатор возвращаемого поля")]
         public object ReturnFieldId
         {
             get
@@ -59,6 +63,7 @@ namespace MyParser
         ///     Xpath для нахождения поля на загруженной странице
         /// </summary>
         [Value]
+        [Description("Шаблон xpath для возвращаемого поля")]
         public object ReturnFieldXpathTemplate
         {
             get
@@ -81,6 +86,7 @@ namespace MyParser
         ///     Шаблон возвращаемого найденого текста
         /// </summary>
         [Value]
+        [Description("Шаблон текста возвращаемого поля")]
         public object ReturnFieldResultTemplate
         {
             get
@@ -104,6 +110,7 @@ namespace MyParser
         ///     используемого при замене найденого текста
         /// </summary>
         [Value]
+        [Description("Шаблон регулярного выражения, используемого при замене найденого текста")]
         public object ReturnFieldRegexPattern
         {
             get
@@ -127,6 +134,7 @@ namespace MyParser
         ///     используемого при замене найденого текста
         /// </summary>
         [Value]
+        [Description("Шаблон для замены у регулярного выражения, используемого при замене найденого текста")]
         public object ReturnFieldRegexReplacement
         {
             get
@@ -148,6 +156,7 @@ namespace MyParser
         /// <summary>
         /// </summary>
         [Value]
+        [Description("Строка для соединения найденных текстов")]
         public object JoinSeparator
         {
             get

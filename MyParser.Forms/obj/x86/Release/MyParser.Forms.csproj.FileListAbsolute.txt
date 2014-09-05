@@ -1,9 +1,3 @@
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.csprojResolveAssemblyReference.cache
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.AboutBox.resources
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.Properties.Resources.resources
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.ReturnFieldInfosDialog.resources
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.csproj.GenerateResource.Cache
-D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.dll.licenses
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\libtidy.dll
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\x64\SQLite.Interop.dll
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\x86\SQLite.Interop.dll
@@ -30,5 +24,11 @@ D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\System.Data.SQLite.xm
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\HtmlAgilityPack.pdb
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\HtmlAgilityPack.xml
 D:\Projects\MyParserLibrary\MyParser.Forms\bin\x86\Release\TidyManaged.xml
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.csprojResolveAssemblyReference.cache
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.AboutBox.resources
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.Properties.Resources.resources
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.ReturnFieldInfosDialog.resources
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.csproj.GenerateResource.Cache
+D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.dll.licenses
 D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.dll
 D:\Projects\MyParserLibrary\MyParser.Forms\obj\x86\Release\MyParser.Forms.pdb

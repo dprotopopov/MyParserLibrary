@@ -39,7 +39,7 @@ namespace MyParser
 
         public static int NumberOfTriesBeforeError
         {
-            get { return 1; }
+            get { return 3; }
         }
 
         public static TimeSpan Timeout

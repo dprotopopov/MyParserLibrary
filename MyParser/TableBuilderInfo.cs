@@ -1,11 +1,16 @@
+using System;
+using System.ComponentModel;
 using System.Reflection;
 using MyLibrary.Attributes;
 
 namespace MyParser
 {
+    [Serializable]
+    [TypeConverter(typeof (ExpandableObjectConverter))]
     public class TableBuilderInfo : MyLibrary.Collections.Properties, IValueable
     {
         [Value]
+        [Description("Идентификатор сайта в базе данных")]
         public object SiteId
         {
             get
@@ -25,6 +30,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Метод отправки запроса к сайту")]
         public object Method
         {
             get
@@ -50,6 +56,7 @@ namespace MyParser
         ///     ...
         /// </summary>
         [Value]
+        [Description("Идентификатор кодировки сайта")]
         public object Encoding
         {
             get
@@ -69,6 +76,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Идентификатор обработчика компрессии загружаемых данных")]
         public object Compression
         {
             get
@@ -88,6 +96,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Битовые флаги используемых исправленных редакций страницы")]
         public object Edition
         {
             get
@@ -107,6 +116,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Шаблон данных, отправляемых в POST запросе")]
         public object RequestTemplate
         {
             get
@@ -126,6 +136,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Идентификатор таблицы")]
         public object TableName
         {
             get
@@ -145,6 +156,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Идентификатор колонки в таблице")]
         public object FieldName
         {
             get
@@ -164,6 +176,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Шаблон запроса")]
         public object UrlTemplate
         {
             get
@@ -183,6 +196,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Шаблон xpath для значения")]
         public object XpathTemplate
         {
             get
@@ -203,6 +217,7 @@ namespace MyParser
 
 
         [Value]
+        [Description("Шаблон значения")]
         public object ResultTemplate
         {
             get
@@ -222,6 +237,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Шаблон регулярного выражения для значения")]
         public object RegexPattern
         {
             get
@@ -241,6 +257,7 @@ namespace MyParser
         }
 
         [Value]
+        [Description("Шаблон замены регулярного выражения для значения")]
         public object RegexReplacement
         {
             get
@@ -262,6 +279,7 @@ namespace MyParser
         /// <summary>
         /// </summary>
         [Value]
+        [Description("Строка для соединения найденных текстов")]
         public object JoinSeparator
         {
             get

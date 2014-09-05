@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.XtraEditors;
+using DevExpress.XtraGrid.Views.Base;
 
 namespace MyParser.Forms
 {
@@ -19,15 +21,13 @@ namespace MyParser.Forms
 
         private void ReturnFieldInfosDialog_Load(object sender, EventArgs e)
         {
-            listBoxControlKey.Items.Clear();
-            listBoxControlKey.Items.AddRange(
-                ReturnFieldInfos.ToList().Select(value => value).Cast<object>().ToArray());
+            gridControl1.DataSource = new BindingList<ReturnFieldInfo>(ReturnFieldInfos.ToList());
         }
 
-        private void listBoxKey_SelectedIndexChanged(object sender, EventArgs e)
+        private void gridView1_FocusedRowChanged(object sender, FocusedRowChangedEventArgs e)
         {
             propertyGridControlReturnFieldInfo.SelectedObject =
-                listBoxControlKey.SelectedItem;
+                gridView1.GetFocusedRow();
         }
     }
 }

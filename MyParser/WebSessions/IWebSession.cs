@@ -23,7 +23,6 @@ namespace MyParser.WebSessions
         /// <summary>
         ///     Получить ответ
         /// </summary>
-        /// <param name="request">Запрос</param>
         /// <returns>Ответ</returns>
         void GetResponse();
 

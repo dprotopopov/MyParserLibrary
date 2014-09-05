@@ -31,9 +31,11 @@
             this.formAssistant1 = new DevExpress.XtraBars.FormAssistant();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.listBoxControlKey = new DevExpress.XtraEditors.ListBoxControl();
             this.propertyGridControlReturnFieldInfo = new DevExpress.XtraVerticalGrid.PropertyGridControl();
             this.simpleButtonCancel = new DevExpress.XtraEditors.SimpleButton();
+            this.gridControl1 = new DevExpress.XtraGrid.GridControl();
+            this.gridView1 = new DevExpress.XtraGrid.Views.Grid.GridView();
+            this.ReturnFieldId = new DevExpress.XtraGrid.Columns.GridColumn();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -42,8 +44,9 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.listBoxControlKey)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.propertyGridControlReturnFieldInfo)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -72,7 +75,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.listBoxControlKey);
+            this.splitContainer2.Panel1.Controls.Add(this.gridControl1);
             // 
             // splitContainer2.Panel2
             // 
@@ -80,15 +83,6 @@
             this.splitContainer2.Size = new System.Drawing.Size(652, 329);
             this.splitContainer2.SplitterDistance = 267;
             this.splitContainer2.TabIndex = 0;
-            // 
-            // listBoxControlKey
-            // 
-            this.listBoxControlKey.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBoxControlKey.Location = new System.Drawing.Point(0, 0);
-            this.listBoxControlKey.Name = "listBoxControlKey";
-            this.listBoxControlKey.Size = new System.Drawing.Size(267, 329);
-            this.listBoxControlKey.TabIndex = 0;
-            this.listBoxControlKey.SelectedIndexChanged += new System.EventHandler(this.listBoxKey_SelectedIndexChanged);
             // 
             // propertyGridControlReturnFieldInfo
             // 
@@ -106,6 +100,36 @@
             this.simpleButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.simpleButtonCancel.TabIndex = 1;
             this.simpleButtonCancel.Text = "Cancel";
+            // 
+            // gridControl1
+            // 
+            this.gridControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gridControl1.Location = new System.Drawing.Point(0, 0);
+            this.gridControl1.MainView = this.gridView1;
+            this.gridControl1.Name = "gridControl1";
+            this.gridControl1.Size = new System.Drawing.Size(267, 329);
+            this.gridControl1.TabIndex = 0;
+            this.gridControl1.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
+            this.gridView1});
+            // 
+            // gridView1
+            // 
+            this.gridView1.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
+            this.ReturnFieldId});
+            this.gridView1.GridControl = this.gridControl1;
+            this.gridView1.Name = "gridView1";
+            this.gridView1.OptionsBehavior.Editable = false;
+            this.gridView1.FocusedRowChanged += new DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventHandler(this.gridView1_FocusedRowChanged);
+            // 
+            // ReturnFieldId
+            // 
+            this.ReturnFieldId.Caption = "ReturnFieldId";
+            this.ReturnFieldId.FieldName = "ReturnFieldId";
+            this.ReturnFieldId.Name = "ReturnFieldId";
+            this.ReturnFieldId.OptionsColumn.AllowEdit = false;
+            this.ReturnFieldId.OptionsColumn.ReadOnly = true;
+            this.ReturnFieldId.Visible = true;
+            this.ReturnFieldId.VisibleIndex = 0;
             // 
             // ReturnFieldInfosDialog
             // 
@@ -125,8 +149,9 @@
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.listBoxControlKey)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.propertyGridControlReturnFieldInfo)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridControl1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -138,6 +163,8 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private DevExpress.XtraVerticalGrid.PropertyGridControl propertyGridControlReturnFieldInfo;
         private DevExpress.XtraEditors.SimpleButton simpleButtonCancel;
-        private DevExpress.XtraEditors.ListBoxControl listBoxControlKey;
+        private DevExpress.XtraGrid.GridControl gridControl1;
+        private DevExpress.XtraGrid.Views.Grid.GridView gridView1;
+        private DevExpress.XtraGrid.Columns.GridColumn ReturnFieldId;
     }
 }

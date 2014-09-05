@@ -1,5 +1,8 @@
 ﻿namespace MyParser.WebTasks
 {
+    /// <summary>
+    ///     Статус задачи загрузки данных
+    /// </summary>
     public enum WebTaskStatus
     {
         Ready = 0,

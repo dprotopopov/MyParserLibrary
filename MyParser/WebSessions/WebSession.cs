@@ -49,7 +49,6 @@ namespace MyParser.WebSessions
 
         /// <summary>
         /// </summary>
-        /// <param name="request"></param>
         /// <returns></returns>
         public void GetResponse()
         {

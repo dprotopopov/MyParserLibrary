@@ -65,7 +65,8 @@ namespace MyParser
             for (int i = 0; i < NumberOfTriesBeforeError && !memoryStreams.Any(); i++)
                 try
                 {
-                    var httpWebRequest = (HttpWebRequest) System.Net.WebRequest.Create(uri);
+                    Debug.WriteLine("Try # {0}", i);
+                    var httpWebRequest = (HttpWebRequest)System.Net.WebRequest.Create(uri);
                     httpWebRequest.CookieContainer = new CookieContainer();
                     httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
                     httpWebRequest.ContentType = string.Format(@"text/html; charset={0}", Encoding);
@@ -88,7 +89,7 @@ namespace MyParser
 
                         using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
                         {
-                            Debug.WriteLine(string.Format("Request: {0}", Request));
+                            Debug.WriteLine("Request: {0}", Request);
                             streamWriter.Write(Request);
                             streamWriter.Flush();
                         }
@@ -106,6 +107,7 @@ namespace MyParser
                         }
                         catch (Exception exception)
                         {
+                            Debug.WriteLine(exception.ToString());
                             if (AppendLineCallback != null) AppendLineCallback(exception.ToString());
                         }
                         finally
@@ -137,14 +139,17 @@ namespace MyParser
                 }
                 catch (AbandonedMutexException exception)
                 {
+                    Debug.WriteLine(exception.ToString());
                     if (AppendLineCallback != null) AppendLineCallback(exception.ToString());
                 }
                 catch (WebException exception)
                 {
+                    Debug.WriteLine(exception.ToString());
                     if (AppendLineCallback != null) AppendLineCallback(exception.ToString());
                 }
                 catch (Exception exception)
                 {
+                    Debug.WriteLine(exception.ToString());
                     if (AppendLineCallback != null) AppendLineCallback(exception.ToString());
                 }
 
@@ -154,6 +159,8 @@ namespace MyParser
             memoryStreams.First().Seek(0, SeekOrigin.Begin);
             if ((Edition & (int) DocumentEdition.Tided) != 0)
             {
+                Debug.WriteLine("Add tided");
+
                 Document tidy = Document.FromStream(memoryStreams.First());
 
                 tidy.ForceOutput = true;
@@ -171,7 +178,10 @@ namespace MyParser
                 if (ProgressCallback != null) ProgressCallback(++current, ++total);
             }
             if ((Edition & (int) DocumentEdition.Original) == 0)
+            {
+                Debug.WriteLine("Remove original");
                 memoryStreams.Dequeue();
+            }
 
             if (CompliteCallback != null) CompliteCallback();
             return memoryStreams;

@@ -20,6 +20,9 @@ using String = MyLibrary.Types.String;
 
 namespace MyParser
 {
+    /// <summary>
+    ///     Класс для загрузки и настройки справочников парсера
+    /// </summary>
     public sealed class Builder : ITrace, ILastError, IValueable
     {
         private const string ReturnTitle = @"Title";
@@ -122,8 +125,7 @@ namespace MyParser
                 titles = new KeyValuePair<
                     Dictionary<object, KeyValuePair<object, string>>,
                     Dictionary<object, KeyValuePair<object, string>>>(
-                    TitleData.Key.ToDictionary(
-                        item => item.Key, item => item, ObjectComparer),
+                    TitleData.Key.ToDictionary(item => item.Key, item => item, ObjectComparer),
                     TitleData.Value.ToDictionary(item => item.Key, item => item, ObjectComparer));
 
             Mapping mapping = Database.GetMapping(TableName.ToString(), MinLevel, MaxLevel, SiteMinLevel, SiteMaxLevel,
@@ -264,6 +266,7 @@ namespace MyParser
                     );
                 string value = string.Join("::", list);
                 dictionary.Add(key, value);
+                Debug.WriteLine("{0}-{1}", key, value);
                 if (ProgressCallback != null) ProgressCallback(++Current, Total);
             }
 
@@ -583,15 +586,27 @@ namespace MyParser
                 lock (progress) Current += bad.Count()*good.Count();
                 lock (progress) if (ProgressCallback != null) ProgressCallback(Current, Total);
 
-                lock (gridItems)
-                    GridItems.AddRange(from pair in map.Values
-                        from keyIndex in pair.Key
-                        from valueIndex in pair.Value
-                        select new GridItem
+                foreach (var pair in map.Values.Where(p => p.Key.Any() && p.Value.Any()))
+                {
+                    var keyMin = pair.Key.Min(item => titles.Key[item].Value.Length);
+                    var valueMax = pair.Value.Max(item => titles.Value[item].Value.Length);
+                    var keyIndex = pair.Key.First(item => titles.Key[item].Value.Length == keyMin);
+                    var valueIndex = pair.Value.First(item => titles.Value[item].Value.Length == valueMax);
+                    lock (gridItems) GridItems.Add(new GridItem
                         {
                             Key = titles.Key[keyIndex],
                             Value = titles.Value[valueIndex]
                         });
+                }
+                //lock (gridItems)
+                //    GridItems.AddRange(from pair in map.Values
+                //        from keyIndex in pair.Key
+                //        from valueIndex in pair.Value
+                //        select new GridItem
+                //        {
+                //            Key = titles.Key[keyIndex],
+                //            Value = titles.Value[valueIndex]
+                //        });
 
                 lock (progress) if (ProgressCallback != null) ProgressCallback(++Current, Total);
             });
@@ -641,6 +656,8 @@ namespace MyParser
             SiteProperties siteProperties = Database.GetSiteProperties(SiteId);
             TableBuilderInfos builderInfos = Database.GetTableBuilderInfos(SiteId);
             TableBuilderInfo builderInfo = builderInfos[TableName.ToString()][FieldName.ToString()];
+            Debug.WriteLine("builderInfo {0}", builderInfo);
+
             ReturnFieldInfos = Database.GetReturnFieldInfos(SiteId);
             Crawler.Method = builderInfo.Method.ToString();
             Crawler.Encoding = builderInfo.Encoding.ToString();
@@ -728,10 +745,14 @@ namespace MyParser
                 for (int i = 0; i < pair.Value.MaxCount; i++)
                 {
                     Values slice = pair.Value.Slice(i);
+                    Debug.WriteLine("slice {0}", slice);
+                    Debug.WriteLine("returnFieldInfos {0}", returnFieldInfos);
 
                     ReturnFields returnFields = Parser.BuildReturnFields(streams,
                         slice,
                         returnFieldInfos.ToList());
+
+                    Debug.WriteLine("returnFields {0}", returnFields);
 
                     int count = returnFields[FieldName.ToString()].Count();
                     var items = new Values

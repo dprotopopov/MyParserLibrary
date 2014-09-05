@@ -73,8 +73,8 @@ namespace MyParser.WebTasks
                 {
                     Url = new StackListQueue<string> {builder.ToString()}
                 };
-                IEnumerable<MemoryStream> docs = This.Crawler.WebRequest(builder.Uri, This.WebSession);
-                This.ReturnFields = This.Parser.BuildReturnFields(docs, values,
+                IEnumerable<MemoryStream> streams = This.Crawler.WebRequest(builder.Uri, This.WebSession);
+                This.ReturnFields = This.Parser.BuildReturnFields(streams, values,
                     This.ReturnFieldInfos.ToList());
                 This.Status = WebTaskStatus.Finished;
                 This.Thread = null;
@@ -83,6 +83,7 @@ namespace MyParser.WebTasks
             }
             catch (Exception exception)
             {
+                Debug.WriteLine(exception.ToString());
                 This.LastError = exception;
                 This.Status = WebTaskStatus.Error;
                 This.Thread = null;
